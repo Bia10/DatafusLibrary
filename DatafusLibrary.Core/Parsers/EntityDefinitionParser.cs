@@ -1,7 +1,8 @@
 ﻿using DatafusLibrary.Core.DataDefinitions;
-using DatafusLibrary.Core.LanguageModels.Sharp;
-using DatafusLibrary.Core.LanguageModels.Sharp.Descriptors;
+using DatafusLibrary.Core.Extensions;
 using DatafusLibrary.Core.Serialization;
+using DatafusLibrary.LanguageModels.Sharp;
+using DatafusLibrary.LanguageModels.Sharp.Descriptors;
 
 namespace DatafusLibrary.Core.Parsers;
 
@@ -25,10 +26,9 @@ public static class EntityDefinitionParser
     private static BasicClass ParseToClassModel(EntityType entityDefinition, BasicClass classModel)
     {
         if (entityDefinition is null)
-        {
             throw new ArgumentNullException(nameof(entityDefinition));
-        }
 
+        classModel.Namespace = entityDefinition.packageName ?? string.Empty;
         classModel.ClassName = entityDefinition.memberName ?? string.Empty;
 
         if (entityDefinition.fields is not null && entityDefinition.fields.Any())
@@ -49,7 +49,7 @@ public static class EntityDefinitionParser
 
             var property = new PropertyDescriptor()
             {
-                Name = name,
+                Name = name.ToPascalCase(),
                 Type = type,
             };
 

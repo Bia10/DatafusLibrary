@@ -13,10 +13,8 @@ public static class Json
     public static async Task<T?> DeserializeAsync<T>(string json, JsonSerializerOptions? options = null)
     {
         if (string.IsNullOrEmpty(json))
-        {
             throw new ArgumentNullException(nameof(json));
-        }
-
+        
         var utf8Json = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
         return await DeserializeAsync<T>(utf8Json, options);
