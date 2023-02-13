@@ -1,6 +1,8 @@
 ﻿using DatafusLibrary.Core.DataDefinitions;
 using DatafusLibrary.Core.Extensions;
 using DatafusLibrary.Core.IO;
+using DatafusLibrary.Core.Parsers;
+using DatafusLibrary.Core.Parsers.LanguageModels.Sharp;
 using DatafusLibrary.Core.Serialization;
 
 namespace DatafusLibrary.TestConsole;
@@ -49,8 +51,28 @@ internal static class Program
             (entityDefinitions, entityData) = DefinitionsAndDataToString(areaEntity);
         }
 
-        var entityDefinitionJson = await Json.DeserializeAsync<List<EntityType>>(entityDefinitions);
+        var entityDefinitionsJson = await Json.DeserializeAsync<List<EntityType>>(entityDefinitions);
 
-        Console.WriteLine(entityDefinitionJson);
+        List<BasicClass> basicClasses = new();
+
+        if (entityDefinitionsJson is not null && entityDefinitionsJson.Any())
+        {
+            foreach (var entityDefinition in entityDefinitionsJson)
+            {
+                var parsedClass = EntityDefinitionParser.ParseToClassModel(entityDefinition, new BasicClass());
+
+                basicClasses.Add(parsedClass);
+            }
+        }
+
+        foreach (var basicClass in basicClasses)
+        {
+            Console.Write($"ClassName: {basicClass.ClassName} \n");
+
+            foreach (var propertyDescriptor in basicClass.Properties)
+            {
+                Console.Write($"PropertyName: {propertyDescriptor.Name} PropertyType: {propertyDescriptor.Type} \n" );
+            }
+        }
     }
 }

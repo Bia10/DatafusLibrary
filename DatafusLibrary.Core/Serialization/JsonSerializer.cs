@@ -10,7 +10,7 @@ public static class Json
         WriteIndented = true
     };
 
-    public static async Task<T?> DeserializeAsync<T>(string json)
+    public static async Task<T?> DeserializeAsync<T>(string json, JsonSerializerOptions? options = null)
     {
         if (string.IsNullOrEmpty(json))
         {
@@ -19,7 +19,7 @@ public static class Json
 
         var utf8Json = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
-        return await DeserializeAsync<T>(utf8Json);
+        return await DeserializeAsync<T>(utf8Json, options);
     }
 
     private static async Task<T?> DeserializeAsync<T>(Stream utf8Json, JsonSerializerOptions? options = null)
