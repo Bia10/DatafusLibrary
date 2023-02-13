@@ -1,12 +1,28 @@
 ﻿using DatafusLibrary.Core.DataDefinitions;
-using DatafusLibrary.Core.Parsers.LanguageModels.Sharp;
-using DatafusLibrary.Core.Parsers.LanguageModels.Sharp.Descriptors;
+using DatafusLibrary.Core.LanguageModels.Sharp;
+using DatafusLibrary.Core.LanguageModels.Sharp.Descriptors;
+using DatafusLibrary.Core.Serialization;
 
 namespace DatafusLibrary.Core.Parsers;
 
 public static class EntityDefinitionParser
 {
-    public static BasicClass ParseToClassModel(EntityType entityDefinition, BasicClass classModel)
+    public static async Task<List<BasicClass>> ParseToBasicClasses(string entityDefinitions)
+    {
+        var entityDefinitionsJson = await Json.DeserializeAsync<List<EntityType>>(entityDefinitions);
+
+        List<BasicClass> basicClasses = new();
+
+        if (entityDefinitionsJson is not null && entityDefinitionsJson.Any())
+        {
+            basicClasses.AddRange(entityDefinitionsJson
+                .Select(entityDefinition => ParseToClassModel(entityDefinition, new BasicClass())));
+        }
+
+        return basicClasses;
+    }
+
+    private static BasicClass ParseToClassModel(EntityType entityDefinition, BasicClass classModel)
     {
         if (entityDefinition is null)
         {

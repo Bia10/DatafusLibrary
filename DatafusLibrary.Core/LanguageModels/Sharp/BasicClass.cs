@@ -1,6 +1,6 @@
-﻿using DatafusLibrary.Core.Parsers.LanguageModels.Sharp.Descriptors;
+﻿using DatafusLibrary.Core.LanguageModels.Sharp.Descriptors;
 
-namespace DatafusLibrary.Core.Parsers.LanguageModels.Sharp;
+namespace DatafusLibrary.Core.LanguageModels.Sharp;
 
 public class BasicClass
 {

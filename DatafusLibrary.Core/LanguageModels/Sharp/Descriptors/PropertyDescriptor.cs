@@ -1,4 +1,4 @@
-﻿namespace DatafusLibrary.Core.Parsers.LanguageModels.Sharp.Descriptors;
+﻿namespace DatafusLibrary.Core.LanguageModels.Sharp.Descriptors;
 
 public class PropertyDescriptor
 {
