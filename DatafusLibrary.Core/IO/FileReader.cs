@@ -36,4 +36,30 @@ public static class FileReader
             throw;
         }
     }
+
+    public static async Task<string[]> ReadAllLinesUntilLineAsync(string path, Encoding encoding, string terminatingLine)
+    {
+        try
+        {
+            List<string> lines = new();
+
+            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
+                DefaultBufferSize, DefaultOptions);
+            using (var reader = new StreamReader(stream, encoding))
+            {
+                while (await reader.ReadLineAsync() is { } line && !line.Equals(terminatingLine))
+                {
+                    lines.Add(line);
+                }
+            }
+
+            return lines.ToArray();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+    }
+
 }

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace DatafusLibrary.Core.Serialization;
@@ -7,6 +8,7 @@ public static class Json
 {
     private static readonly JsonSerializerOptions Options = new()
     {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         WriteIndented = true
     };
 
@@ -14,7 +16,7 @@ public static class Json
     {
         if (string.IsNullOrEmpty(json))
             throw new ArgumentNullException(nameof(json));
-        
+
         var utf8Json = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
         return await DeserializeAsync<T>(utf8Json, options);
@@ -31,6 +33,7 @@ public static class Json
         catch (Exception ex)
         {
             Console.WriteLine(ex);
+
             throw;
         }
     }

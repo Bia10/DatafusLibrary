@@ -23,7 +23,7 @@ public static class EntityDefinitionParser
         return basicClasses;
     }
 
-    private static BasicClass ParseToClassModel(EntityType entityDefinition, BasicClass classModel)
+    public static BasicClass ParseToClassModel(EntityType entityDefinition, BasicClass classModel)
     {
         if (entityDefinition is null)
             throw new ArgumentNullException(nameof(entityDefinition));
@@ -39,13 +39,25 @@ public static class EntityDefinitionParser
         return classModel;
     }
 
-    private static List<PropertyDescriptor> ParseProperties(List<Field> fields)
+    public static List<PropertyDescriptor> ParseProperties(List<Field> fields)
     {
         var properties = new List<PropertyDescriptor>();
 
         foreach (var field in fields)
         {
-            var (name, type) = ParseField(field);
+            var (name, type, vectorTypes) = ParseField(field);
+
+            if (vectorTypes is not null)
+            {
+                var complexProperty = new PropertyDescriptor()
+                {
+                    Name = name.ToPascalCase(),
+                    Type = DecodeTypeValueToTypeStr(vectorTypes.type, vectorTypes.name ?? string.Empty),
+                };
+
+                properties.Add(complexProperty);
+                continue;
+            }
 
             var property = new PropertyDescriptor()
             {
@@ -59,29 +71,57 @@ public static class EntityDefinitionParser
         return properties;
     }
 
-    private static (string name, string type) ParseField(Field encodedField)
+    public static (string name, string type, Field? vectorTypes) ParseField(Field encodedField)
     {
-        (string name, string type) result = new()
+        (string name, string type, Field? vectorTypes) result = new()
         {
             name = encodedField.name ?? string.Empty,
-            type = DecodeTypeValueToTypeStr(encodedField.type)
+            type = DecodeTypeValueToTypeStr(encodedField.type, encodedField.name ?? string.Empty),
+            vectorTypes = encodedField.vectorTypes,
         };
 
         return result;
     }
 
-    private static string DecodeTypeValueToTypeStr(int fieldTypeValue)
+    public static string DecodeTypeValueToTypeStr(int fieldTypeValue, string fieldTypeName)
     {
-        return fieldTypeValue switch
+        switch (fieldTypeValue)
         {
-            1 => "rectangle",
-            -1 => "short",
-            -2 => "bool",
-            -3 => "string",
-            -4 => "double",
-            -5 => "int",
-            // TODO: -99 complex type
-            _ => string.Empty
-        };
+            case 5: // table?
+            case 4: // ??
+            case 2: // reference to array of types?
+            case 1: // reference to type
+                return fieldTypeName;
+            case -1:
+                return "short";
+            case -2:
+                return "bool";
+            case -3:
+                return "string";
+            case -4:
+                return "double";
+            case -5:
+                return "int";
+            case -6:
+                return "uint";
+            case -99:
+            {
+                return GetVectorizedTypeStr(fieldTypeName);
+            }
+            default:
+            {
+                Console.WriteLine($"Unrecognized value: {fieldTypeValue} of type name: {fieldTypeName}");
+                return string.Empty;
+            }
+        }
+    }
+
+    private static string GetVectorizedTypeStr(string fieldTypeName)
+    {
+        var dataTypeStr = fieldTypeName
+            .Replace("Vector.<", string.Empty)
+            .Replace(">", string.Empty);
+
+        return $"List<{dataTypeStr}>";
     }
 }
