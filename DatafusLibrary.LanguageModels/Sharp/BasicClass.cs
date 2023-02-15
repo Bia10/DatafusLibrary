@@ -13,9 +13,11 @@ public class BasicClass
 
     public string ClassModifier { get; set; } = "public";
 
+    public string ClassAccessModifier { get; set; } = string.Empty;
+
     public string ClassName { get; set; }
 
-    public string ClassBase { get; set; }
+    public string ClassBase { get; set; } = string.Empty;
 
     public string BaseClassAccessor => string.IsNullOrEmpty(ClassBase) ? string.Empty : ":";
 
@@ -28,6 +30,14 @@ public class BasicClass
     public IEnumerable<ParameterDescriptor> Constructor => ConstructorParameters
         .Concat(InjectedProperties.Select(x => x.ToCamelCase()));
 
+    public string BaseConstructorAccessor => string.IsNullOrEmpty(ClassBase) ? string.Empty : ":";
+
+    public string BaseConstructorDeclaration => string.IsNullOrEmpty(ClassBase) ? string.Empty : "base";
+
+    public string BaseConstructorOpeningBrace => string.IsNullOrEmpty(ClassBase) ? string.Empty : "(";
+
     public IEnumerable<string> BaseConstructor => ConstructorParameters
         .Select(x => x.Name);
+
+    public string BaseConstructorClosingBrace => string.IsNullOrEmpty(ClassBase) ? string.Empty : ")";
 }

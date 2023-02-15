@@ -91,7 +91,7 @@ public static class EntityDefinitionParser
             case 4: // ??
             case 2: // reference to array of types?
             case 1: // reference to type
-                return fieldTypeName;
+                return ParseCustomType(fieldTypeName);
             case -1:
                 return "short";
             case -2:
@@ -123,5 +123,13 @@ public static class EntityDefinitionParser
             .Replace(">", string.Empty);
 
         return $"List<{dataTypeStr}>";
+    }
+
+    private static string ParseCustomType(string fieldTypeName)
+    {
+        if (fieldTypeName == "bounds")
+            return "rectangle";
+        
+        return string.Empty;
     }
 }

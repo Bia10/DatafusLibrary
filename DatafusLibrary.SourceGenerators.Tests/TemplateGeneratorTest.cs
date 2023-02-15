@@ -37,10 +37,14 @@ public class TemplateGeneratorTest
             var generatedSource = TemplateGenerator.Execute(templateString, basicClass);
 
             var sourceFile = new GeneratedSourceFile(generatedSource, basicClass.ClassName);
-
-            var finalPath = Path.Combine(outputDir, sourceFile.FileName + "generated.cs");
+            
+            var finalPath = Path.Combine(outputDir, sourceFile.FileName + ".generated.cs");
 
             await sourceFile.WriteToFile(finalPath);
+
+            var userSource = await File.ReadAllTextAsync(finalPath);
+
+            var generationResult = GeneratorRunner.Run(sourceFile.SourceCode, new BasicClassGenerator());
         }
     }
 }
