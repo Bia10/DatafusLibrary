@@ -18,22 +18,29 @@ public class TemplateGeneratorTest
     [Fact]
     public async Task GenerateFromTemplateTest()
     {
-        var workingDirectory = Environment.CurrentDirectory;
-        var projectDirectory = Directory.GetParent(workingDirectory);
-        var solutionDirectory = projectDirectory?.Parent?.Parent?.Parent;
-
-        var path = solutionDirectory + @"\DatafusLibrary.TestConsole\MockData\Areas.json";
-
         const string templateName = "BasicClass.scriban";
+        const string packageName = "com.ankamagames.dofus.datacenter.world";
 
-        var classModels = await EntityParser.ParseEntityToBasicClass(path);
+        var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+        var dirPath = Path.GetFullPath(Path.Combine(desktopPath, @".\Dofus2Botting\data\entities_json"));
+
+        var worldPackageGroup = await EntityParser.GetEntityClassesPackageGroupByName(dirPath, packageName);
+        var classesFromPackageGroup = EntityParser.GetClassesFromPackageGroup(worldPackageGroup);
 
         var templateString = TemplateLoader.LoadTemplate(templateName, typeof(TemplateLoader));
+        var outputDir = Path.Combine(dirPath, packageName);
 
-        foreach (var generatedSource in classModels.Select(classModel =>
-                     TemplateGenerator.Execute(templateString, classModel)))
+        Directory.CreateDirectory(outputDir);
+
+        foreach (var basicClass in classesFromPackageGroup)
         {
-            _output.WriteLine(generatedSource);
+            var generatedSource = TemplateGenerator.Execute(templateString, basicClass);
+
+            var sourceFile = new GeneratedSourceFile(generatedSource, basicClass.ClassName);
+
+            var finalPath = Path.Combine(outputDir, sourceFile.FileName + "generated.cs");
+
+            await sourceFile.WriteToFile(finalPath);
         }
     }
 }

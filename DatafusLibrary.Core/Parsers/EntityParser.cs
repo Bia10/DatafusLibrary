@@ -51,9 +51,10 @@ public static partial class EntityParser
         return await EntityDefinitionParser.ParseToBasicClasses(entityDefinitions);
     }
 
-    public static async Task<List<List<EntityType>>> GetAllEntityTypesInDirectory(string pathToDir)
+    public static async Task<List<List<EntityType>>> GetAllEntityClassesInDirectory(string pathToDir)
     {
         const string terminatorLine = "\t\"data\": [";
+
         var entityDefinitions = new List<List<EntityType>>();
 
         foreach (var fileName in Directory.GetFiles(pathToDir))
@@ -79,7 +80,7 @@ public static partial class EntityParser
 
                 var currentDefinition = JsonSerializer.Serialize(entityType.def, options);
 
-                Console.WriteLine($"Group name: |{currentDefinition}| members count.");
+                //Console.WriteLine($"Group name: |{currentDefinition}| members count.");
 
                 var entityDefinition = await Json.DeserializeAsync<List<EntityType>>(currentDefinition);
 
@@ -91,6 +92,81 @@ public static partial class EntityParser
         }
 
         return entityDefinitions;
+    }
+
+    public static async Task<List<EntityType>> GetAllEntityClasses(string pathToDir)
+    {
+        var entities = await GetAllEntityClassesInDirectory(pathToDir);
+
+        var entityClasses = entities
+            .SelectMany(entityClass => entityClass)
+            .ToList();
+
+        return entityClasses;
+    }
+
+    public static async Task<List<IGrouping<string?, EntityType>>> GetAllEntityClassesPackageGroups(string pathToDir)
+    {
+       var entityClasses = await GetAllEntityClasses(pathToDir);
+
+        var listOfEntitiesGroupedByPackage = entityClasses
+            .GroupBy(entityClass => entityClass.packageName)
+            .Select(grouping => grouping)
+            .Where(grouping => !string.IsNullOrEmpty(grouping.Key))
+            .DistinctBy(grouping => grouping.Key)
+            .OrderBy(grouping => grouping.Key)
+            .ToList();
+
+        return listOfEntitiesGroupedByPackage;
+    }
+
+    public static async Task<IGrouping<string?, EntityType>> GetEntityClassesPackageGroupByName(string pathToDir, string packageName)
+    {
+        var entityClasses = await GetAllEntityClasses(pathToDir);
+
+        var entityClassesGroupedByPackageName = entityClasses
+            .GroupBy(entityClass => entityClass.packageName)
+            .Select(grouping => grouping)
+            .Where(grouping => !string.IsNullOrEmpty(grouping.Key) && 
+                               grouping.Key.Equals(packageName, StringComparison.Ordinal))
+            .ToList()
+            .First();
+
+        return entityClassesGroupedByPackageName;
+    }
+
+    public static IEnumerable<BasicClass> GetClassesFromPackageGroup(IGrouping<string?, EntityType> packageGroup)
+    {
+        Console.WriteLine($"Parsing group of entity classes in package: |{packageGroup.Key}|");
+
+        var baseClasses = new List<BasicClass>();
+
+        foreach (var entityClass in packageGroup)
+        {
+            if (entityClass.fields is null)
+            {
+                Console.WriteLine($"Entity class with no fields encountered: {entityClass.memberName}");
+                continue;
+            }
+
+            var classProperties = EntityDefinitionParser.ParseProperties(entityClass.fields);
+
+            foreach (var propertyDescriptor in classProperties)
+            {
+                Console.WriteLine($"Property name: |{propertyDescriptor.Name}| of type: |{propertyDescriptor.Type}|");
+            }
+
+            var baseClass = EntityDefinitionParser.ParseToClassModel(entityClass, new BasicClass());
+
+            baseClasses.Add(baseClass);
+        }
+        
+        foreach (var basicClass in baseClasses)
+        {
+            Console.WriteLine($"Class of name: |{basicClass.ClassName}| in package namespace: |{basicClass.Namespace}|");
+        }
+
+        return baseClasses;
     }
 
     [System.Text.RegularExpressions.GeneratedRegex(",$")]
