@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.Encodings.Web;
+﻿using System.Text.Encodings.Web;
 using System.Text.Json;
 using DatafusLibrary.Core.DataDefinitions;
 using DatafusLibrary.Core.Extensions;
@@ -59,7 +58,7 @@ public static partial class EntityParser
 
         foreach (var fileName in Directory.GetFiles(pathToDir))
         {
-            var linesUpToData = await FileReader.ReadAllLinesUntilLineAsync(fileName, Encoding.UTF8, terminatorLine);
+            var linesUpToData = await FileReader.ReadAllLinesAsync(fileName, terminatorLine);
 
             var joined = string.Join(string.Empty, linesUpToData);
 

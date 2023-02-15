@@ -7,24 +7,33 @@ public static class FileReader
     private const int DefaultBufferSize = 4096;
     private const FileOptions DefaultOptions = FileOptions.Asynchronous | FileOptions.SequentialScan;
 
-    public static Task<string[]> ReadAllLinesAsync(string path)
+    public static Task<string[]> ReadAllLinesAsync(string path, string? terminatingLine = null)
     {
-        return ReadAllLinesAsync(path, Encoding.UTF8);
+        return ReadAllLinesAsync(path, Encoding.UTF8, terminatingLine);
     }
 
-    private static async Task<string[]> ReadAllLinesAsync(string path, Encoding encoding)
+    private static async Task<string[]> ReadAllLinesAsync(string path, Encoding encoding, string? terminatingLine = null)
     {
         try
         {
             List<string> lines = new();
 
-            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
-                DefaultBufferSize, DefaultOptions);
+            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize, DefaultOptions);
             using (var reader = new StreamReader(stream, encoding))
             {
-                while (await reader.ReadLineAsync() is { } line)
+                if (terminatingLine is null)
                 {
-                    lines.Add(line);
+                    while (await reader.ReadLineAsync() is { } line)
+                    {
+                        lines.Add(line);
+                    }
+                }
+                else
+                {
+                    while (await reader.ReadLineAsync() is { } line && !line.Equals(terminatingLine, StringComparison.Ordinal))
+                    {
+                        lines.Add(line);
+                    }
                 }
             }
 
@@ -36,30 +45,4 @@ public static class FileReader
             throw;
         }
     }
-
-    public static async Task<string[]> ReadAllLinesUntilLineAsync(string path, Encoding encoding, string terminatingLine)
-    {
-        try
-        {
-            List<string> lines = new();
-
-            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
-                DefaultBufferSize, DefaultOptions);
-            using (var reader = new StreamReader(stream, encoding))
-            {
-                while (await reader.ReadLineAsync() is { } line && !line.Equals(terminatingLine))
-                {
-                    lines.Add(line);
-                }
-            }
-
-            return lines.ToArray();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            throw;
-        }
-    }
-
 }

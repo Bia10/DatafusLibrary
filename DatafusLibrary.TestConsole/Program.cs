@@ -1,4 +1,5 @@
-﻿using DatafusLibrary.Core.Parsers;
+﻿using DatafusLibrary.Core.Localization;
+using DatafusLibrary.Core.Parsers;
 using DatafusLibrary.LanguageModels.Sharp;
 
 namespace DatafusLibrary.TestConsole;
@@ -7,6 +8,15 @@ internal static class Program
 {
     private static async Task Main()
     {
+        var translationLookUp = new TranslationLookup();
+
+        await translationLookUp.LoadTranslationFile(
+            "C:\\Users\\Bia\\Desktop\\Dofus2Botting\\data\\translations_json\\i18n_fr.json");
+
+        translationLookUp.TryGetValue(1, out var translation);
+
+        Console.WriteLine(translation);
+
         var workingDirectory = Environment.CurrentDirectory;
         var projectDirectory = Directory.GetParent(workingDirectory);
         var solutionDirectory = projectDirectory?.Parent?.Parent?.Parent;
