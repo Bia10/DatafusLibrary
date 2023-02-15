@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatafusLibrary.SourceGenera
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatafusLibrary.LanguageModels", "DatafusLibrary.LanguageModels\DatafusLibrary.LanguageModels.csproj", "{66FF2031-29A5-4DAA-BA4F-2F0E87289996}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatafusLibrary.Core.Extensions", "DatafusLibrary.Core.Extensions\DatafusLibrary.Core.Extensions.csproj", "{A60B563E-F171-4852-A2F2-498952D51137}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatafusLibrary.Core.Extensions", "DatafusLibrary.Core.Extensions\DatafusLibrary.Core.Extensions.csproj", "{A60B563E-F171-4852-A2F2-498952D51137}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

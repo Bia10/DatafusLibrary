@@ -23,7 +23,7 @@ public static class GeneratorRunner
         if (runtimeLibraries is not null)
         {
             references.AddRange(runtimeLibraries
-                .Where(lib => lib.Name.IndexOf("SourceGenerators", StringComparison.Ordinal) > -1)
+                .Where(IsRuntimeLibraryGenerator)
                 .Select(library => Assembly.Load(new AssemblyName(library.Name)))
                 .Select(assembly => MetadataReference.CreateFromFile(assembly.Location)));
         }
@@ -57,5 +57,10 @@ public static class GeneratorRunner
     {
         return outputCompilation.SyntaxTrees.FirstOrDefault(file => file.FilePath
                 .IndexOf(generators.GetType().Name, StringComparison.Ordinal) > -1)?.ToString();
+    }
+
+    private static bool IsRuntimeLibraryGenerator(RuntimeLibrary library)
+    {
+        return library.Name.IndexOf("SourceGenerators", StringComparison.Ordinal) > -1;
     }
 }

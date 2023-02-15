@@ -1,6 +1,4 @@
-﻿using DatafusLibrary.Core.Extensions;
-
-namespace DatafusLibrary.LanguageModels.Sharp.Descriptors;
+﻿namespace DatafusLibrary.SourceGenerators.Sharp.Descriptors;
 
 public class PropertyAssignDescriptor
 {
@@ -14,7 +12,7 @@ public class PropertyAssignDescriptor
     {
         return new ParameterDescriptor
         {
-            Name = Source.ToCamelCase(),
+            Name = Source,
             Type = Type
         };
     }
