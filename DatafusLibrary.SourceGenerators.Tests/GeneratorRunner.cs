@@ -50,17 +50,26 @@ public static class GeneratorRunner
 
         var generatedCode = GetGeneratedCode(generators, outputCompilation);
 
-        return new GeneratorResult(outputCompilation, diagnostics, generatedCode ?? string.Empty);
+        return new GeneratorResult(outputCompilation, diagnostics, generatedCode);
     }
 
-    private static string? GetGeneratedCode(ISourceGenerator generators, Compilation outputCompilation)
+    private static string GetGeneratedCode(ISourceGenerator generators, Compilation outputCompilation)
     {
-        return outputCompilation.SyntaxTrees.FirstOrDefault(file => file.FilePath
-                .IndexOf(generators.GetType().Name, StringComparison.Ordinal) > -1)?.ToString();
+        var syntaxTree = outputCompilation.SyntaxTrees.FirstOrDefault();
+
+        if (syntaxTree is null)
+            throw new InvalidOperationException();
+
+        return SyntaxTreeIsOfGeneratorType(syntaxTree, generators.GetType().Name).ToString();
     }
 
     private static bool IsRuntimeLibraryGenerator(RuntimeLibrary library)
     {
         return library.Name.IndexOf("SourceGenerators", StringComparison.Ordinal) > -1;
+    }
+
+    private static bool SyntaxTreeIsOfGeneratorType(SyntaxTree syntaxTree, string generatorTypeName)
+    {
+        return syntaxTree.FilePath.IndexOf(generatorTypeName, StringComparison.Ordinal) > -1;
     }
 }

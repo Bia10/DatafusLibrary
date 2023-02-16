@@ -42,9 +42,9 @@ public class TemplateGeneratorTest
 
             await sourceFile.WriteToFile(finalPath);
 
-            var userSource = await File.ReadAllTextAsync(finalPath);
-
             var generationResult = GeneratorRunner.Run(sourceFile.SourceCode, new BasicClassGenerator());
+
+            _output.WriteLine($"Generation result: {generationResult.Compilation.AssemblyName}" );
         }
     }
 }
