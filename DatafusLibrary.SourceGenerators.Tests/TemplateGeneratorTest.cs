@@ -44,7 +44,12 @@ public class TemplateGeneratorTest
 
             var generationResult = GeneratorRunner.Run(sourceFile.SourceCode, new BasicClassGenerator());
 
-            _output.WriteLine($"Generation result: {generationResult.Compilation.AssemblyName}" );
+            for (var i = 0; i < generationResult.Compilation.SyntaxTrees.Count(); i++)
+            {
+                var curSyntaxTree = generationResult.Compilation.SyntaxTrees.ElementAt(i);
+
+                _output.WriteLine($"Generation result pass: {i + 1} syntax: \n {curSyntaxTree} \n");
+            }
         }
     }
 }

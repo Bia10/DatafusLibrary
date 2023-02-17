@@ -6,8 +6,10 @@ using DatafusLibrary.SourceGenerators.Sharp;
 using DatafusLibrary.SourceGenerators.Sharp.Descriptors;
 using DatafusLibrary.SourceGenerators.Templates;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using ParameterDescriptor = DatafusLibrary.SourceGenerators.Sharp.Descriptors.ParameterDescriptor;
 
 namespace DatafusLibrary.SourceGenerators.Generators;
 
@@ -16,7 +18,7 @@ public class BasicClassGenerator : ISourceGenerator
 {
     public void Initialize(GeneratorInitializationContext context)
     {
-        // init
+        context.RegisterForSyntaxNotifications(() => new GeneratedClassSyntaxReceiver());
     }
 
     public void Execute(GeneratorExecutionContext context)
@@ -25,11 +27,6 @@ public class BasicClassGenerator : ISourceGenerator
         {
             foreach (var classSyntax in classSyntaxReceiver.CandidateClasses)
             {
-                foreach (var memberDeclarationSyntax in classSyntax.Members)
-                {
-                    Console.WriteLine($"{memberDeclarationSyntax}");
-                }
-
                 var source = GenerateClass(classSyntax, context);
 
                 context.AddSource(source.FileName, SourceText.From(source.SourceCode, Encoding.UTF8));
@@ -52,43 +49,57 @@ public class BasicClassGenerator : ISourceGenerator
     {
         var classRoot = classSyntax.GetCompilationUnit();
         var classSemanticModel = compilation.GetSemanticModel(classSyntax.SyntaxTree);
-        var classSymbol = classSemanticModel.GetDeclaredSymbol(classSyntax);
+
+        var properties = classSyntax.Members
+            .Where(member => member.IsKind(SyntaxKind.PropertyDeclaration))
+            .Select(member => member as PropertyDeclarationSyntax)
+            .Select(property => new PropertyDescriptor
+            {
+                Name = property.Identifier.ValueText,
+                Type = property.Type.ToFullString()
+            }).ToList();
+
+        var requiredNamespaces = new List<string>();
+
+        var symbols =  classSyntax.GetAllSymbols(classSemanticModel);
+
+        foreach (var (symbol, typeSymbol) in symbols)
+        {
+            if (symbol is not null)
+            {
+                Console.WriteLine($"Symbol name: {symbol.Name} namespace: {symbol.ContainingNamespace}  module: {symbol.ContainingModule}");
+                requiredNamespaces.Add(symbol.ContainingNamespace.ToString());
+            }
+
+            var namespaceOfCollection = typeSymbol.GetNamespaceFromMetadataName(compilation);
+
+            if (!string.IsNullOrEmpty(namespaceOfCollection))
+            {
+                Console.WriteLine($"{namespaceOfCollection}");
+                requiredNamespaces.Add(namespaceOfCollection);
+            }
+        }
 
         var attributeName = nameof(GeneratedCodeAttribute).Replace("Attribute", string.Empty);
 
         var classModel = new BasicClass
         {
-            ClassBase = classSyntax.GetClassName(),
-            ClassName = $"{classSyntax.GetClassName()}{attributeName}",
-            ClassModifier = classSyntax.GetClassModifier(),
-            Usings = classRoot.GetUsingDirectives(),
             Namespace = classRoot.GetNamespace(),
-            ConstructorParameters = GetDefaultConstructorProperties(classSymbol.ContainingType),
-            InjectedProperties = GetInjectedProperties(classSymbol.ContainingType),
+            Usings = requiredNamespaces.Distinct().ToList(),
+            ClassAttributes = attributeName,
+            ClassAccessModifier = classSyntax.GetClassModifier(),
+            ClassName = classSyntax.GetClassName(),
+            Properties = properties,
+            ConstructorParameters = PropertiesToConstructorParams(properties),
+            InjectedProperties = PropertiesToInjectedProperties(properties)
         };
 
         return classModel;
     }
 
-    private static List<ParameterDescriptor> GetDefaultConstructorProperties(ITypeSymbol classSymbol)
+    private static List<PropertyAssignDescriptor> PropertiesToInjectedProperties(IEnumerable<PropertyDescriptor> properties)
     {
-        var constructorProperties = classSymbol.GetAllMembers()
-            .Where(symbol => symbol.Kind.Equals(SymbolKind.Property))
-            .OfType<IPropertySymbol>()
-            .Select(property => new ParameterDescriptor
-            {
-                Name = property.Name,
-                Type = property.Type.ToString(),
-            }).ToList();
-
-        return constructorProperties;
-    }
-
-    private static List<PropertyAssignDescriptor> GetInjectedProperties(ITypeSymbol classSymbol)
-    {
-        var injectedProperties = classSymbol.GetAllMembers()
-            .Where(symbol => symbol.Kind.Equals(SymbolKind.Property))
-            .OfType<IPropertySymbol>()
+        var injectedProperties = properties
             .Select(property => new PropertyAssignDescriptor
             {
                 Destination = property.Name,
@@ -99,19 +110,15 @@ public class BasicClassGenerator : ISourceGenerator
         return injectedProperties;
     }
 
-    private static List<ParameterDescriptor>? GetConstructor(INamedTypeSymbol classSymbol)
+    private static List<ParameterDescriptor> PropertiesToConstructorParams(IEnumerable<PropertyDescriptor> properties)
     {
-        var baseConstructor = classSymbol.Constructors
-            .OrderByDescending(constructorSymbol => constructorSymbol.Parameters.Length)
-            .FirstOrDefault();
-
-        var parList = baseConstructor?.Parameters
+        var injectedProperties = properties
             .Select(property => new ParameterDescriptor
             {
                 Name = property.Name,
                 Type = property.Type.ToString()
             }).ToList();
 
-        return parList;
+        return injectedProperties;
     }
 }
