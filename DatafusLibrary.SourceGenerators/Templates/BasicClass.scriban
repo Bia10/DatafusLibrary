@@ -13,7 +13,7 @@ using {{ using }};
 
 namespace {{Namespace}}
 {
-    [GeneratedCode]
+    [GeneratedCode("DatafusLibrary", "0.1")]
     {{~ ClassAccessModifier }} class {{ClassName}} {{BaseClassAccessor}} {{ClassBase}}
     {
         public {{ClassName}}({{ for par in Constructor }} {{par.Type}} {{par.Name}}{{ if !for.last}},{{ end -}}{{- end }}) {{BaseConstructorAccessor}} {{BaseConstructorDeclaration}}{{BaseConstructorOpeningBrace}}{{ for par in BaseConstructor }}{{par}}{{ if !for.last}},{{ end -}}{{- end }}{{BaseConstructorClosingBrace}}

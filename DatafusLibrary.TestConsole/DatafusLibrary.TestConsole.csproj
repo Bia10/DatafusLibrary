@@ -8,8 +8,5 @@
 	<LangVersion>preview</LangVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DatafusLibrary.Core\DatafusLibrary.Core.csproj" />
-  </ItemGroup>
 
 </Project>

@@ -7,13 +7,4 @@ public class PropertyAssignDescriptor
     public string Source { get; set; } = string.Empty;
 
     public string Type { get; set; } = string.Empty;
-
-    public ParameterDescriptor ToCamelCase()
-    {
-        return new ParameterDescriptor
-        {
-            Name = Source,
-            Type = Type
-        };
-    }
 }

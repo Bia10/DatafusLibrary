@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<LangVersion>preview</LangVersion>
+	<PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -27,6 +28,12 @@
     <ProjectReference Include="..\DatafusLibrary.Core\DatafusLibrary.Core.csproj" />
     <ProjectReference Include="..\DatafusLibrary.LanguageModels\DatafusLibrary.LanguageModels.csproj" />
     <ProjectReference Include="..\DatafusLibrary.SourceGenerators\DatafusLibrary.SourceGenerators.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="GeneratorRunner">
+      <HintPath>..\..\..\..\Desktop\Dofus2Botting\data\entities_json\com.ankamagames.dofus.datacenter.world\com.ankamagames.dofus.datacenter.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

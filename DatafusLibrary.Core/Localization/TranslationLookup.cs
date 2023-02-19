@@ -19,25 +19,43 @@ public class TranslationLookup
 
         var fileLines = await FileReader.ReadAllLinesAsync(pathToFile);
 
-        for (var i = 0; i < fileLines.Length; i ++)
+        foreach (var fileLine in fileLines)
         {
-            if (fileLines[i].StartsWith("{", StringComparison.Ordinal))
+            if (fileLine.StartsWith("{", StringComparison.Ordinal))
                 continue;
-            if (fileLines[i].StartsWith("}", StringComparison.Ordinal))
+            if (fileLine.StartsWith("}", StringComparison.Ordinal))
                 continue;
 
-            var value = fileLines[i].Split(": ", 2)[1];
+            var splitLine = fileLine.Split(": ", 2);
 
-            _internalDictionary?.Add(i, value);
+            var key = Convert.ToInt32(splitLine[0].Replace("\"", ""));
+            var value = splitLine[1];
+
+            _internalDictionary?.Add(key, value);
         }
     }
 
     public string? Get(int key)
     {
-        if (key < 1)
-            throw new ArgumentOutOfRangeException(nameof(key));
+        string? result = null;
 
-        return _internalDictionary[key];
+        if (key < 1)
+        {
+            Console.WriteLine($"Cannot find translation for key: {key}");
+            return result;
+        }
+
+        try
+        {
+            result = _internalDictionary[key];
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Cannot find translation for key: {key}", e);
+            return result;
+        }
+
+        return result;
     }
 
     public void Add(int key, string value)

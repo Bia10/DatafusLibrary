@@ -27,7 +27,7 @@ public class BasicClass
 
     public List<PropertyAssignDescriptor> InjectedProperties { get; set; } = new();
 
-    public IEnumerable<ParameterDescriptor> Constructor => ConstructorParameters.Concat(InjectedProperties.Select(x => x.ToCamelCase()));
+    public IEnumerable<ParameterDescriptor> Constructor => ConstructorParameters;
 
     public string BaseConstructorAccessor => string.IsNullOrEmpty(ClassBase) ? string.Empty : ":";
 

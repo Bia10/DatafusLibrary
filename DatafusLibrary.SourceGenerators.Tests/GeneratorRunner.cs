@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
-using System.Reflection;
 using System.Text;
+using DatafusLibrary.SourceGenerators.Tests.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyModel;
@@ -17,19 +17,7 @@ public static class GeneratorRunner
                  new CSharpParseOptions(LanguageVersion.Preview), string.Empty, Encoding.UTF8)
         };
 
-        var references = new List<PortableExecutableReference>();
-        var runtimeLibraries = DependencyContext.Default?.RuntimeLibraries;
-
-        if (runtimeLibraries is not null)
-        {
-            references.AddRange(runtimeLibraries
-                .Where(IsRuntimeLibraryGenerator)
-                .Select(library => Assembly.Load(new AssemblyName(library.Name)))
-                .Select(assembly => MetadataReference.CreateFromFile(assembly.Location)));
-        }
-
-        references.Add(MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location));
-
+        var references = CompilationReferences.GetCompileReferences();
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
         var compilation = CSharpCompilation.Create(nameof(GeneratorRunner), syntaxTrees, references, options);
 

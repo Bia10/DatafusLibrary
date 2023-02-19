@@ -34,6 +34,20 @@ public static partial class EntityParser
         return (string.Empty, string.Empty);
     }
 
+    public static async Task<List<BasicClass>> GetAllBasicClassesFromDir(string dirPath)
+    {
+        var allBasicClasses = new List<BasicClass>();
+
+        var allEntityClassesPackageGroups = await GetAllEntityClassesPackageGroups(dirPath);
+
+        foreach (var basicClassesOfPackageGroup in allEntityClassesPackageGroups.Select(GetClassesFromPackageGroup))
+        {
+            allBasicClasses.AddRange(basicClassesOfPackageGroup);
+        }
+
+        return allBasicClasses;
+    }
+
     public static async Task<List<BasicClass>> ParseEntityToBasicClass(string? pathToJson)
     {
         if (string.IsNullOrEmpty(pathToJson))
@@ -120,7 +134,7 @@ public static partial class EntityParser
         return listOfEntitiesGroupedByPackage;
     }
 
-    public static async Task<IGrouping<string?, EntityType>> GetEntityClassesPackageGroupByName(string pathToDir, string packageName)
+    public static async Task<IGrouping<string?, EntityType>> GetEntityClassesGroupsByPackageNames(string pathToDir, string packageName)
     {
         var entityClasses = await GetAllEntityClasses(pathToDir);
 
@@ -137,8 +151,6 @@ public static partial class EntityParser
 
     public static IEnumerable<BasicClass> GetClassesFromPackageGroup(IGrouping<string?, EntityType> packageGroup)
     {
-        Console.WriteLine($"Parsing group of entity classes in package: |{packageGroup.Key}|");
-
         var baseClasses = new List<BasicClass>();
 
         foreach (var entityClass in packageGroup)
@@ -149,23 +161,10 @@ public static partial class EntityParser
                 continue;
             }
 
-            var classProperties = EntityDefinitionParser.ParseProperties(entityClass.fields);
-
-            foreach (var propertyDescriptor in classProperties)
-            {
-                Console.WriteLine($"Property name: |{propertyDescriptor.Name}| of type: |{propertyDescriptor.Type}|");
-            }
-
             var baseClass = EntityDefinitionParser.ParseToClassModel(entityClass, new BasicClass());
-
             baseClasses.Add(baseClass);
         }
         
-        foreach (var basicClass in baseClasses)
-        {
-            Console.WriteLine($"Class of name: |{basicClass.ClassName}| in package namespace: |{basicClass.Namespace}|");
-        }
-
         return baseClasses;
     }
 

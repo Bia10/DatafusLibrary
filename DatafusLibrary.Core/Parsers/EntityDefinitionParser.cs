@@ -33,6 +33,8 @@ public static class EntityDefinitionParser
 
         if (entityDefinition.fields is not null && entityDefinition.fields.Any())
         {
+            Console.WriteLine(
+                $"getting properties for class: {classModel.Namespace} in package: {classModel.ClassName} ");
             classModel.Properties = ParseProperties(entityDefinition.fields);
         }
 
@@ -47,22 +49,10 @@ public static class EntityDefinitionParser
         {
             var (name, type, vectorTypes) = ParseField(field);
 
-            if (vectorTypes is not null)
-            {
-                var complexProperty = new PropertyDescriptor()
-                {
-                    Name = name.ToPascalCase(),
-                    Type = DecodeTypeValueToTypeStr(vectorTypes.type, vectorTypes.name ?? string.Empty),
-                };
-
-                properties.Add(complexProperty);
-                continue;
-            }
-
             var property = new PropertyDescriptor()
             {
                 Name = name.ToPascalCase(),
-                Type = type,
+                Type = type
             };
 
             properties.Add(property);
@@ -76,60 +66,136 @@ public static class EntityDefinitionParser
         (string name, string type, Field? vectorTypes) result = new()
         {
             name = encodedField.name ?? string.Empty,
-            type = DecodeTypeValueToTypeStr(encodedField.type, encodedField.name ?? string.Empty),
-            vectorTypes = encodedField.vectorTypes,
+            type = DecodeTypeValueToTypeStr(encodedField.type, encodedField.name ?? string.Empty, encodedField.vectorTypes),
+            vectorTypes = encodedField.vectorTypes
         };
 
         return result;
     }
 
-    public static string DecodeTypeValueToTypeStr(int fieldTypeValue, string fieldTypeName)
+    public static string DecodeTypeValueToTypeStr(int fieldTypeValue, string fieldTypeName, Field? vectorType)
     {
-        switch (fieldTypeValue)
+        var fieldType = fieldTypeValue switch
         {
-            case 5: // table?
-            case 4: // ??
-            case 2: // reference to array of types?
-            case 1: // reference to type
-                return ParseCustomType(fieldTypeName);
-            case -1:
-                return "short";
-            case -2:
-                return "bool";
-            case -3:
-                return "string";
-            case -4:
-                return "double";
-            case -5:
-                return "int";
-            case -6:
-                return "uint";
-            case -99:
-            {
-                return GetVectorizedTypeStr(fieldTypeName);
-            }
-            default:
-            {
-                Console.WriteLine($"Unrecognized value: {fieldTypeValue} of type name: {fieldTypeName}");
-                return string.Empty;
-            }
+            -1 => "int",
+            -2 => "bool",
+            -3 => "string",
+            -4 => "float",
+            -5 => "int",
+            -6 => "uint",
+            -99 => GetVectorizedType(fieldTypeValue, vectorType),
+            _ => GetReferenceName(fieldTypeName)
+        };
+
+        if (string.IsNullOrEmpty(fieldType))
+        {
+            Console.WriteLine($"Unrecognized value: {fieldTypeValue} of type name: {fieldTypeName}");
         }
+
+        return fieldType;
     }
 
-    private static string GetVectorizedTypeStr(string fieldTypeName)
+    public static string GetVectorizedType(int fieldTypeValue, Field? vectorType)
     {
-        var dataTypeStr = fieldTypeName
-            .Replace("Vector.<", string.Empty)
-            .Replace(">", string.Empty);
+        if (string.IsNullOrEmpty(vectorType?.name))
+        {
+            throw new ArgumentNullException(nameof(vectorType));
+        }
 
-        return $"List<{dataTypeStr}>";
+        if (vectorType.name.StartsWith("Vector.<Vector.<"))
+        {
+            var argumentType = vectorType.name
+                .Replace("Vector.<Vector.<", string.Empty)
+                .Replace(">>", string.Empty);
+
+            if (argumentType.Contains("::"))
+            {
+                argumentType = argumentType.Split("::", 2)[1];
+            }
+
+            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
+            {
+                argumentType = "float";
+            }
+
+            return $"List<List<{argumentType}>>";
+        }
+
+        if (vectorType.name.StartsWith("Vector.<"))
+        {
+            var argumentType = vectorType.name
+                .Replace("Vector.<", string.Empty)
+                .Replace(">", string.Empty);
+
+            if (argumentType.Contains("::"))
+            {
+                argumentType = argumentType.Split("::", 2)[1];
+            }
+
+            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
+            {
+                argumentType = "float";
+            }
+
+            if (argumentType.Equals("String"))
+            {
+                argumentType = "string";
+            }
+
+            return $"List<{argumentType}>";
+        }
+
+        if (fieldTypeValue.Equals(-99) && vectorType.name.StartsWith("Vector.<"))
+        {
+            var argumentType = vectorType.name
+                .Replace("Vector.<", string.Empty)
+                .Replace(">", string.Empty);
+
+            if (argumentType.Contains("::"))
+            {
+                argumentType = argumentType.Split("::", 2)[1];
+            }
+
+            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
+            {
+                argumentType = "float";
+            }
+
+            if (argumentType.Equals("String"))
+            {
+                argumentType = "string";
+            }
+
+            return $"List<{argumentType}>";
+        }
+            
+        return string.Empty;
     }
 
-    private static string ParseCustomType(string fieldTypeName)
+    public static string GetReferenceName(string fieldTypeName)
     {
-        if (fieldTypeName == "bounds")
-            return "rectangle";
-        
+        Console.WriteLine($"Unrecognized typeValue of type name: {fieldTypeName}");
+
+        if (fieldTypeName.Equals("bonusCharacteristics"))
+        {
+            return "MonsterBonusCharacteristics";
+        }
+
+        if (fieldTypeName.Equals("parameters"))
+        {
+            return "QuestObjectiveParameters";
+        }
+
+        if (fieldTypeName.Equals("coords"))
+        {
+            return "Point";
+        }
+
+        if (fieldTypeName.Equals("bounds"))
+        {
+            return "Rectangle";
+        }
+
         return string.Empty;
     }
 }

@@ -7,6 +7,6 @@ internal static class Program
         var workingDirectory = Environment.CurrentDirectory;
         var projectDirectory = Directory.GetParent(workingDirectory);
         var solutionDirectory = projectDirectory?.Parent?.Parent?.Parent;
-        var path = solutionDirectory + @"\DatafusLibrary.TestConsole\MockData\Areas.json";
+        var path = solutionDirectory + @"\DatafusLibrary.TestConsole\MockData";
     }
 }
