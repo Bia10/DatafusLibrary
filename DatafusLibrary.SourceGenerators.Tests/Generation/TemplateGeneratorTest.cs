@@ -2,6 +2,7 @@
 using DatafusLibrary.Core.Parsers;
 using DatafusLibrary.SourceGenerators.Generators;
 using DatafusLibrary.SourceGenerators.Templates;
+using DatafusLibrary.SourceGenerators.Tests.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
@@ -12,86 +13,63 @@ namespace DatafusLibrary.SourceGenerators.Tests.Generation;
 public class TemplateGeneratorTest
 {
     private readonly ITestOutputHelper _output;
+    private readonly GenerationContext _generationContext;
 
     public TemplateGeneratorTest(ITestOutputHelper output)
     {
         _output = output;
-    }
-
-    private static string CreateOutputDir(string inputDataPath)
-    {
-        const string generationOutputPath = "com.ankamagames.dofus.datacenter.world";
-
-        var outputDir = Path.Combine(inputDataPath, generationOutputPath);
-
-        if (!Directory.Exists(outputDir))
+        _generationContext = new GenerationContext(
+            successSyntaxTrees: new List<SyntaxTree>(),
+            failedSyntaxTrees: new List<SyntaxTree>(), 
+            generationResults: new List<GeneratorResult>(),
+            inputTemplateName: "BasicClass.scriban", 
+            generatedSrcFileSuffix: ".generated.cs",
+            generationOutputPath: "com.ankamagames.dofus.datacenter.world",
+            outputAssemblyName: "com.ankamagames.dofus.datacenter.dll",
+            jsonDataDirectoryPath: string.Empty)
         {
-            var dirInfo = Directory.CreateDirectory(outputDir);
-
-            return dirInfo.FullName;
-        }
-
-        return outputDir;
+            JsonDataDirectoryPath = GenerationContext.SetInputDataPath()
+        };
     }
 
     [Fact]
     public async Task GenerateFromTemplateTest()
     {
-        var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-        var dirPath = Path.GetFullPath(Path.Combine(desktopPath, @".\Dofus2Botting\data\entities_json"));
+        var allBasicClasses = await EntityParser.GetAllBasicClassesFromDir(_generationContext.JsonDataDirectoryPath);
 
-        var allBasicClasses = await EntityParser.GetAllBasicClassesFromDir(dirPath);
+        var outputDir = GenerationContext.CreateOutputDir(_generationContext.JsonDataDirectoryPath, _generationContext.GenerationOutputPath);
 
-        var outputDir = CreateOutputDir(dirPath);
-
-        var templateString = TemplateLoader.LoadTemplate("BasicClass.scriban", typeof(TemplateLoader));
-
-        var successTrees = new List<SyntaxTree>();
-        var failedTrees = new List<SyntaxTree>();
+        var templateString = TemplateLoader.LoadTemplate(_generationContext.InputTemplateName, typeof(TemplateLoader));
 
         GeneratorResult? generationResult = null;
 
         foreach (var basicClass in allBasicClasses)
         {
             if (basicClass.ClassName.Equals("LuaFormula"))
-            {
                 continue;
-            }
 
             var generatedSource = TemplateGenerator.Execute(templateString, basicClass);
 
-            var srcFile = new GeneratedSourceFile(generatedSource, basicClass.ClassName);
+            var generatedSourceFile = new GeneratedSourceFile(generatedSource, basicClass.ClassName + _generationContext.GeneratedSrcFileSuffix);
 
-            var finalPath = Path.Combine(outputDir, srcFile.FileName + ".generated.cs");
+            var srcFilePath = Path.Combine(outputDir, generatedSourceFile.FileName);
 
-            await srcFile.WriteToFile(finalPath);
+            await generatedSourceFile.WriteToFile(srcFilePath);
 
-            generationResult = GeneratorRunner.Run(srcFile.SourceCode, new BasicClassGenerator());
+            generationResult = GeneratorRunner.Run(generatedSourceFile.SourceCode, new BasicClassGenerator());
 
-            if (generationResult is not null)
-            {
-                var diagnosticErrors = generationResult.Diagnostics
-                    .Where(diagnostic => diagnostic.WarningLevel.Equals(0))
-                    .ToList();
+            _output.WriteLine(generationResult.GetDiagnostics());
 
-                if (diagnosticErrors.Any())
-                {
-                    _output.WriteLine(string.Join(Environment.NewLine, diagnosticErrors.Select(diagnostic => diagnostic.ToString())));
-                    failedTrees.AddRange(generationResult.Compilation.SyntaxTrees);
-                    continue;
-                }
-
-                successTrees.Add(generationResult.Compilation.SyntaxTrees.Last());
-            }
+            _generationContext.GenerationResults.Add(generationResult);
+            _generationContext.SuccessSyntaxTrees.Add(generationResult.Compilation.SyntaxTrees.Last());
         }
 
-        const string assemblyName = "com.ankamagames.dofus.datacenter.dll";
-        var syntaxTrees = successTrees.DistinctBy(file => file.FilePath).ToList();
+        var syntaxTrees = _generationContext.SuccessSyntaxTrees.DistinctBy(file => file.FilePath).ToList();
         var references = generationResult?.Compilation.References;
 
-        var compilationOutputPath = Path.Combine(outputDir + "\\" + assemblyName);
+        var compilationOutputPath = Path.Combine(outputDir + "\\" + _generationContext.OutputAssemblyName);
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-        var newCompilation = CSharpCompilation.Create(assemblyName, syntaxTrees, references, options);
+        var newCompilation = CSharpCompilation.Create(_generationContext.OutputAssemblyName, syntaxTrees, references, options);
 
         var arrayOfGenerators = ImmutableArray<BasicClassGenerator>.Empty;
         var arrayOfAdditionalTexts = ImmutableArray<AdditionalText>.Empty;

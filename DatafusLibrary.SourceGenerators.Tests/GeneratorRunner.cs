@@ -1,9 +1,9 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
 using DatafusLibrary.SourceGenerators.Tests.Helpers;
+using DatafusLibrary.SourceGenerators.Tests.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.DependencyModel;
 
 namespace DatafusLibrary.SourceGenerators.Tests;
 
@@ -24,11 +24,11 @@ public static class GeneratorRunner
         return compilation;
     }
 
-    public static GeneratorResult Run(string sourceCode, ISourceGenerator generators)
+    public static GeneratorResult Run(string sourceCode, ISourceGenerator generator)
     {
         var compilation = CreateCompilation(sourceCode);
 
-        var arrayOfGenerators = ImmutableArray.Create(generators);
+        var arrayOfGenerators = ImmutableArray.Create(generator);
         var arrayOfAdditionalTexts = ImmutableArray<AdditionalText>.Empty;
         var parseOptions = compilation.SyntaxTrees.First().Options as CSharpParseOptions;
 
@@ -36,28 +36,26 @@ public static class GeneratorRunner
 
         driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
 
-        var generatedCode = GetGeneratedCode(generators, outputCompilation);
+        var generatedCode = GetGeneratedCode(generator, outputCompilation);
 
         return new GeneratorResult(outputCompilation, diagnostics, generatedCode);
     }
 
-    private static string GetGeneratedCode(ISourceGenerator generators, Compilation outputCompilation)
+    private static string GetGeneratedCode(ISourceGenerator generator, Compilation outputCompilation)
     {
         var syntaxTree = outputCompilation.SyntaxTrees.FirstOrDefault();
 
         if (syntaxTree is null)
             throw new InvalidOperationException();
 
-        return SyntaxTreeIsOfGeneratorType(syntaxTree, generators.GetType().Name).ToString();
+        return SyntaxTreeIsOfGeneratorType(syntaxTree, generator) 
+            ? syntaxTree.GetText().ToString() 
+            : string.Empty;
     }
 
-    private static bool IsRuntimeLibraryGenerator(RuntimeLibrary library)
+    private static bool SyntaxTreeIsOfGeneratorType(SyntaxTree syntaxTree, ISourceGenerator generator)
     {
-        return library.Name.IndexOf("SourceGenerators", StringComparison.Ordinal) > -1;
-    }
-
-    private static bool SyntaxTreeIsOfGeneratorType(SyntaxTree syntaxTree, string generatorTypeName)
-    {
+        var generatorTypeName = generator.GetType().Name;
         return syntaxTree.FilePath.IndexOf(generatorTypeName, StringComparison.Ordinal) > -1;
     }
 }

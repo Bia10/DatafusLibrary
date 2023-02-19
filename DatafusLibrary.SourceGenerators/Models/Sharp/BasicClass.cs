@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
-using DatafusLibrary.SourceGenerators.Sharp.Descriptors;
+using DatafusLibrary.SourceGenerators.Models.Sharp.Descriptors;
 
-namespace DatafusLibrary.SourceGenerators.Sharp;
+namespace DatafusLibrary.SourceGenerators.Models.Sharp;
 
 public class BasicClass
 {

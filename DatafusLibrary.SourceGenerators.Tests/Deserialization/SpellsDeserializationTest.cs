@@ -16,7 +16,7 @@ public class SpellsDeserializationTest
     }
 
     [Fact]
-    private async Task DeserializeSpells()
+    public async Task DeserializeSpells()
     {
         _output.WriteLine(string.Join(Environment.NewLine, "Spells deserialization test!"));
 
@@ -38,7 +38,10 @@ public class SpellsDeserializationTest
         var spellVariantData = await EntityDataParser.GetDataFromJson<List<SpellVariant>>(pathToSpellVariantsJson);
         var spellLevelData = await EntityDataParser.GetDataFromJson<List<SpellLevel>>(pathToSpellLevelsJson);
 
-        var groupedById = spellLevelData.GroupBy(spellLevel => spellLevel.SpellId);
+        if (spellLevelData is not null)
+        {
+            var groupedById = spellLevelData.GroupBy(spellLevel => spellLevel.SpellId);
+        }
 
         if (spellData is null || !spellData.Any())
         {

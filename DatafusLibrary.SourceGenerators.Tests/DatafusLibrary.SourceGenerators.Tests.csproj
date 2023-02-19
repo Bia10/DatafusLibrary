@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DatafusLibrary.Core\DatafusLibrary.Core.csproj" />
-    <ProjectReference Include="..\DatafusLibrary.LanguageModels\DatafusLibrary.LanguageModels.csproj" />
     <ProjectReference Include="..\DatafusLibrary.SourceGenerators\DatafusLibrary.SourceGenerators.csproj" />
   </ItemGroup>
 

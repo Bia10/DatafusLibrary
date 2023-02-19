@@ -1,4 +1,4 @@
-﻿namespace DatafusLibrary.SourceGenerators.Sharp.Descriptors;
+﻿namespace DatafusLibrary.SourceGenerators.Models.Sharp.Descriptors;
 
 public class PropertyDescriptor
 {

@@ -1,4 +1,4 @@
-﻿using DatafusLibrary.SourceGenerators.Sharp.Descriptors;
+﻿using DatafusLibrary.SourceGenerators.Models.Sharp.Descriptors;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

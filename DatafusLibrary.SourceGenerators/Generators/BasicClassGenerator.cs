@@ -1,9 +1,10 @@
 ﻿using System.CodeDom.Compiler;
 using System.Text;
 using DatafusLibrary.SourceGenerators.Extensions;
+using DatafusLibrary.SourceGenerators.Models;
+using DatafusLibrary.SourceGenerators.Models.Sharp;
+using DatafusLibrary.SourceGenerators.Models.Sharp.Descriptors;
 using DatafusLibrary.SourceGenerators.Receivers;
-using DatafusLibrary.SourceGenerators.Sharp;
-using DatafusLibrary.SourceGenerators.Sharp.Descriptors;
 using DatafusLibrary.SourceGenerators.Templates;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

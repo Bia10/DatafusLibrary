@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace DatafusLibrary.SourceGenerators.Tests;
+namespace DatafusLibrary.SourceGenerators.Tests.Models;
 
 public class GeneratedSourceFile
 {

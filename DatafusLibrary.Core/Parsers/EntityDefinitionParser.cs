@@ -1,8 +1,7 @@
 ﻿using DatafusLibrary.Core.DataDefinitions;
-using DatafusLibrary.Core.Extensions;
+using DatafusLibrary.Core.LanguageModels.Sharp;
+using DatafusLibrary.Core.LanguageModels.Sharp.Descriptors;
 using DatafusLibrary.Core.Serialization;
-using DatafusLibrary.LanguageModels.Sharp;
-using DatafusLibrary.LanguageModels.Sharp.Descriptors;
 
 namespace DatafusLibrary.Core.Parsers;
 
@@ -47,11 +46,11 @@ public static class EntityDefinitionParser
 
         foreach (var field in fields)
         {
-            var (name, type, vectorTypes) = ParseField(field);
+            var (name, type, _) = ParseField(field);
 
             var property = new PropertyDescriptor()
             {
-                Name = name.ToPascalCase(),
+                Name = char.ToLower(name[0]) + name[1..],
                 Type = type
             };
 

@@ -1,4 +1,4 @@
-﻿namespace DatafusLibrary.SourceGenerators;
+﻿namespace DatafusLibrary.SourceGenerators.Models;
 
 public class GeneratedSourceFile
 {

@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace DatafusLibrary.SourceGenerators.Tests.Helpers;
 
-public class CompilationReferences
+public static class CompilationReferences
 {
     public static IEnumerable<MetadataReference> GetRuntimeReferences()
     {
@@ -34,5 +34,10 @@ public class CompilationReferences
         }
 
         return references;
+    }
+
+    private static bool IsLibrarySourceGenerator(Library library)
+    {
+        return library.Name.IndexOf("SourceGenerators", StringComparison.Ordinal) > -1;
     }
 }

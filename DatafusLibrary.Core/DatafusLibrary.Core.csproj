@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DatafusLibrary.LanguageModels\DatafusLibrary.LanguageModels.csproj" />
+    <Folder Include="Extensions\" />
   </ItemGroup>
 
 </Project>

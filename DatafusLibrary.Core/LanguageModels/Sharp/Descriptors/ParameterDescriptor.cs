@@ -1,4 +1,4 @@
-﻿namespace DatafusLibrary.SourceGenerators.Sharp.Descriptors;
+﻿namespace DatafusLibrary.Core.LanguageModels.Sharp.Descriptors;
 
 public class ParameterDescriptor
 {

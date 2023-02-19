@@ -14,14 +14,8 @@ public static class String
     {
         var result = toLower ? input.ToLowerFirstChar() : input;
 
-        if (input.Equals("params", StringComparison.OrdinalIgnoreCase))
-        {
-            result = "@" + result;
-
-            return result;
-        }
-
-        if (input.Equals("operator", StringComparison.OrdinalIgnoreCase))
+        if (input.Equals("params", StringComparison.OrdinalIgnoreCase) ||
+            input.Equals("operator", StringComparison.OrdinalIgnoreCase))
         {
             result = "@" + result;
 
