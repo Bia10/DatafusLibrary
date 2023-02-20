@@ -25,14 +25,25 @@ public static class CompilationReferences
     {
         var references = new List<MetadataReference>();
 
-        var compileLibraries = DependencyContext.Default?.CompileLibraries;
-        if (compileLibraries is not null && compileLibraries.Any())
+        var compileLibraries = DependencyContext.Default?.CompileLibraries
+             .Where(compileLib => compileLib.Type.Equals("referenceassembly", StringComparison.Ordinal))
+             .Where(compileLib => !string.IsNullOrEmpty(compileLib.Path))
+             .ToList();
+
+        if (compileLibraries is null || !compileLibraries.Any())
+            throw new InvalidOperationException("No suitable references in compile libraries found!");
+
+        try
         {
             references.AddRange(compileLibraries
                 .SelectMany(compileLibrary => compileLibrary.ResolveReferencePaths())
                 .Select(libraryPath => MetadataReference.CreateFromFile(libraryPath)));
         }
-
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        
         return references;
     }
 

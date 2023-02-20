@@ -4,11 +4,6 @@ namespace DatafusLibrary.TestConsole;
 
 public static class Program
 {
-    //static string workingDirectory = Environment.CurrentDirectory;
-    //static DirectoryInfo projectDirectory = Directory.GetParent(workingDirectory);
-    //static DirectoryInfo solutionDirectory = projectDirectory?.Parent?.Parent?.Parent;
-    //static string path = solutionDirectory + @"\DatafusLibrary.TestConsole\MockData";
-
     private static readonly object ConsoleLock = new();
     private static readonly ManualResetEvent Finished = new(false);
 
@@ -18,31 +13,40 @@ public static class Program
 
         var testMessageSink = new TestMessageSink();
 
-        var messagesEventSink = new DiagnosticEventSink();
-        messagesEventSink.DiagnosticMessageEvent += MessagesEventSink_DiagnosticMessageEvent;
-        messagesEventSink.ErrorMessageEvent += MessagesEventSink_ErrorMessageEvent;
+        testMessageSink.Discovery.TestCaseDiscoveryMessageEvent += DiscoveryEventSink_TestCaseDiscoveryMessageEvent;
+        testMessageSink.Discovery.DiscoveryCompleteMessageEvent += DiscoveryEventSink_DiscoveryCompleteMessageEvent;
 
-        var executionEventSink = new ExecutionEventSink();
-        executionEventSink.TestAssemblyFinishedEvent += ExecutionEvenSink_TestAssemblyFinishedEvent;
-        executionEventSink.TestPassedEvent += ExecutionEvenSink_TestPassedEvent;
-        executionEventSink.TestFailedEvent += ExecutionEvenSink_TestFailedEvent;
-        executionEventSink.TestOutputEvent += ExecutionEventSink_TestOutputEvent;
+        testMessageSink.Diagnostics.DiagnosticMessageEvent += MessagesEventSink_DiagnosticMessageEvent;
+        testMessageSink.Diagnostics.ErrorMessageEvent += MessagesEventSink_ErrorMessageEvent;
 
-        var xUnit = new XunitFrontController(AppDomainSupport.IfAvailable, assemblyLocation, diagnosticMessageSink: testMessageSink);
+        testMessageSink.Execution.TestAssemblyStartingEvent += ExecutionEvenSink_TestAssemblyStartingEvent;
+        testMessageSink.Execution.TestAssemblyFinishedEvent += ExecutionEvenSink_TestAssemblyFinishedEvent;
+        testMessageSink.Execution.TestPassedEvent += ExecutionEvenSink_TestPassedEvent;
+        testMessageSink.Execution.TestFailedEvent += ExecutionEvenSink_TestFailedEvent;
+        testMessageSink.Execution.TestOutputEvent += ExecutionEventSink_TestOutputEvent;
+
+        var xUnit = new XunitFrontController(
+            AppDomainSupport.IfAvailable,
+            assemblyLocation, 
+            "C:\\Users\\Bia\\source\\repos\\DatafusLibrary\\DatafusLibrary.TestConsole\\xunit.runner.json",
+            false,
+            null, 
+            null, 
+            testMessageSink);
 
         var assemblyOptions = new TestAssemblyConfiguration
         {
+            AppDomain = AppDomainSupport.IfAvailable,
             DiagnosticMessages = true,
             InternalDiagnosticMessages = true,
             MethodDisplay = TestMethodDisplay.ClassAndMethod
         };
 
-        var testDiscoverySink = new TestDiscoverySink();
         var discoveryOptions = TestFrameworkOptions.ForDiscovery(assemblyOptions);
         var executionOptions = TestFrameworkOptions.ForExecution(assemblyOptions);
 
-        xUnit.Find(true, testDiscoverySink, discoveryOptions);
-        xUnit.RunAll(executionEventSink, discoveryOptions, executionOptions);
+        xUnit.Find(true, testMessageSink, discoveryOptions);
+        xUnit.RunAll(testMessageSink, discoveryOptions, executionOptions);
         
         try
         {
@@ -61,6 +65,19 @@ public static class Program
         return Task.CompletedTask;
     }
 
+
+    private static void DiscoveryEventSink_TestCaseDiscoveryMessageEvent(MessageHandlerArgs<ITestCaseDiscoveryMessage> args)
+    {
+        lock (ConsoleLock)
+            Console.WriteLine($"TestDiscovery event, \n found test: {args.Message.TestCase.TestMethod.Method.Name} \n in class: {args.Message.TestClass.Class.Name}");
+    }
+
+    private static void DiscoveryEventSink_DiscoveryCompleteMessageEvent(MessageHandlerArgs<IDiscoveryCompleteMessage> args)
+    {
+        lock (ConsoleLock)
+            Console.WriteLine($"DiscoveryComplete event at: {DateTime.Now}");
+    }
+
     private static void MessagesEventSink_ErrorMessageEvent(MessageHandlerArgs<IErrorMessage> args)
     {
         lock (ConsoleLock)
@@ -76,13 +93,16 @@ public static class Program
     private static void ExecutionEventSink_TestOutputEvent(MessageHandlerArgs<ITestOutput> args)
     {
         lock (ConsoleLock)
-            Console.WriteLine($"TestOutput event: {args.Message.Test.DisplayName}");
+            Console.WriteLine($"TestOutput event: {args.Message.Output}");
     }
 
     private static void ExecutionEvenSink_TestFailedEvent(MessageHandlerArgs<ITestFailed> args)
     {
         lock (ConsoleLock)
-            Console.WriteLine($"TestFailed event: {args.Message.Test.DisplayName}");
+        {
+            Console.WriteLine($"TestFailed event, method: {args.Message.Test.TestCase.TestMethod.Method.Name}");
+            Console.WriteLine($"TestFailed event, messages: \n {string.Join(",", args.Message.Messages)}");
+        }
     }
  
     private static void ExecutionEvenSink_TestPassedEvent(MessageHandlerArgs<ITestPassed> args)
@@ -91,6 +111,16 @@ public static class Program
             Console.WriteLine($"TestPassed event: {args.Message.Test.DisplayName}");
     }
  
+    private static void ExecutionEvenSink_TestAssemblyStartingEvent(MessageHandlerArgs<ITestAssemblyStarting> args)
+    {
+        lock (ConsoleLock)
+        {
+            Console.WriteLine($"Starting test run at: {args.Message.StartTime} with test env: {args.Message.TestFrameworkDisplayName}");
+            Console.WriteLine($"Testing assembly: {args.Message.TestAssembly.Assembly.Name}");
+            Console.WriteLine($"Test cases count: {args.Message.TestCases.Count()}");
+        }
+    }
+
     private static void ExecutionEvenSink_TestAssemblyFinishedEvent(MessageHandlerArgs<ITestAssemblyFinished> args)
     {
         lock (ConsoleLock)

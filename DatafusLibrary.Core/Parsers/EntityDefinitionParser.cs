@@ -50,7 +50,7 @@ public static class EntityDefinitionParser
 
             var property = new PropertyDescriptor()
             {
-                Name = char.ToLower(name[0]) + name[1..],
+                Name = char.ToUpper(name[0]) + name[1..],
                 Type = type
             };
 

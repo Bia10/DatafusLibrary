@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="GeneratorRunner">
+    <Reference Include="com.ankamagames.dofus.datacenter.dll">
       <HintPath>..\..\..\..\Desktop\Dofus2Botting\data\entities_json\com.ankamagames.dofus.datacenter.world\com.ankamagames.dofus.datacenter.dll</HintPath>
     </Reference>
   </ItemGroup>
