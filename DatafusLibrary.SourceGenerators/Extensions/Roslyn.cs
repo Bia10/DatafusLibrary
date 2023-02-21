@@ -30,7 +30,7 @@ public static class Roslyn
     {
         return syntaxNode.Ancestors().OfType<CompilationUnitSyntax>().FirstOrDefault()
                ?? throw new InvalidOperationException(
-                   $"Compilation unit not found for sytaxNode: {syntaxNode.Identifier.ToFullString()}");
+                   $"Compilation unit not found for syntaxNode: {syntaxNode.Identifier.ToFullString()}");
     }
 
     public static IEnumerable<ISymbol> GetAllMembers(this ITypeSymbol type)
@@ -159,9 +159,15 @@ public static class Roslyn
             var @namespace = stack.Pop();
 
             foreach (var member in @namespace.GetMembers())
-                if (member is INamespaceSymbol memberAsNamespace)
-                    stack.Push(memberAsNamespace);
-                else if (member is INamedTypeSymbol memberAsNamedTypeSymbol) yield return memberAsNamedTypeSymbol;
+                switch (member)
+                {
+                    case INamespaceSymbol memberAsNamespace:
+                        stack.Push(memberAsNamespace);
+                        break;
+                    case INamedTypeSymbol memberAsNamedTypeSymbol:
+                        yield return memberAsNamedTypeSymbol;
+                        break;
+                }
         }
     }
 
@@ -236,8 +242,7 @@ public static class Roslyn
 
             if (namespaceOfCollection.Any(namespaceName => !string.IsNullOrEmpty(namespaceName)))
             {
-                foreach (var namespaceName in namespaceOfCollection
-                             .Where(namespaceName => requiredNamespaces.Add(namespaceName)))
+                foreach (var namespaceName in namespaceOfCollection.Where(requiredNamespaces.Add))
                 {
                     Console.WriteLine($"Adding namespace: {namespaceName}");
                 }

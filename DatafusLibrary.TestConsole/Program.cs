@@ -27,6 +27,8 @@ public static class Program
         testMessageSink.Execution.TestFailedEvent += ExecutionEvenSink_TestFailedEvent;
         testMessageSink.Execution.TestOutputEvent += ExecutionEventSink_TestOutputEvent;
 
+        testMessageSink.Runner.TestExecutionSummaryEvent += ExecutionEventSink_TestSummaryEvent;
+        
         var xUnit = new XunitFrontController(
             AppDomainSupport.IfAvailable,
             assemblyLocation,
@@ -50,6 +52,9 @@ public static class Program
         xUnit.Find(true, testMessageSink, discoveryOptions);
         xUnit.RunAll(testMessageSink, discoveryOptions, executionOptions);
 
+        Console.WriteLine($"TestFrameworkDisplayName: {xUnit.TestFrameworkDisplayName}" +
+                          $" TargetFramework: {xUnit.TargetFramework}" +
+                          $" CanUseAppDomains: {xUnit.CanUseAppDomains}");
         try
         {
             Finished.WaitOne();
@@ -65,6 +70,19 @@ public static class Program
         }
 
         return Task.CompletedTask;
+    }
+
+    private static void ExecutionEventSink_TestSummaryEvent(MessageHandlerArgs<ITestExecutionSummary> args)
+    {
+        lock (ConsoleLock)
+        {
+            Console.WriteLine($"Execution summary event, time elapsed: {args.Message.ElapsedClockTime}");
+
+            foreach (var summaryKvp in args.Message.Summaries)
+            {
+                Console.WriteLine($"Index: {summaryKvp.Key} Summary: {summaryKvp.Value}");
+            }
+        }
     }
 
     private static void DiscoveryEventSink_TestCaseDiscoveryMessageEvent(
@@ -104,10 +122,10 @@ public static class Program
 
     private static void ExecutionEventSink_TestOutputEvent(MessageHandlerArgs<ITestOutput> args)
     {
-        lock (ConsoleLock)
-        {
-            Console.WriteLine($"TestOutput event: {args.Message.Output}");
-        }
+        //lock (ConsoleLock)
+        //{
+        //    Console.WriteLine($"TestOutput event: {args.Message.Output}");
+        //}
     }
 
     private static void ExecutionEvenSink_TestFailedEvent(MessageHandlerArgs<ITestFailed> args)

@@ -87,6 +87,8 @@ public class TemplateGeneratorTest
 
         var result = outputCompilation.Emit(compilationOutputPath);
 
+        Debug.Assert(result.Success.Equals(true));
+
         if (result.Diagnostics.Any())
             _output.WriteLine(string.Join(Environment.NewLine,
                 result.Diagnostics.Select(diagnostic => diagnostic.Location.ToString())));

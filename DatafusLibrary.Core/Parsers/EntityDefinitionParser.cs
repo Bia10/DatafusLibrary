@@ -30,8 +30,7 @@ public static class EntityDefinitionParser
 
         if (entityDefinition.fields is not null && entityDefinition.fields.Any())
         {
-            Console.WriteLine(
-                $"getting properties for class: {classModel.Namespace} in package: {classModel.ClassName} ");
+            //Console.WriteLine($"getting properties for class: {classModel.Namespace} in package: {classModel.ClassName} ");
             classModel.Properties = ParseProperties(entityDefinition.fields);
         }
 
@@ -86,14 +85,17 @@ public static class EntityDefinitionParser
         };
 
         if (string.IsNullOrEmpty(fieldType))
-            Console.WriteLine($"Unrecognized value: {fieldTypeValue} of type name: {fieldTypeName}");
+        {
+           // Console.WriteLine($"Unrecognized value: {fieldTypeValue} of type name: {fieldTypeName}");
+        }
 
         return fieldType;
     }
 
     public static string GetVectorizedType(int fieldTypeValue, Field? vectorType)
     {
-        if (string.IsNullOrEmpty(vectorType?.name)) throw new ArgumentNullException(nameof(vectorType));
+        if (string.IsNullOrEmpty(vectorType?.name)) 
+            throw new ArgumentNullException(nameof(vectorType));
 
         if (vectorType.name.StartsWith("Vector.<Vector.<"))
         {
@@ -101,9 +103,11 @@ public static class EntityDefinitionParser
                 .Replace("Vector.<Vector.<", string.Empty)
                 .Replace(">>", string.Empty);
 
-            if (argumentType.Contains("::")) argumentType = argumentType.Split("::", 2)[1];
+            if (argumentType.Contains("::"))
+                argumentType = argumentType.Split("::", 2)[1];
 
-            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase)) argumentType = "float";
+            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase)) 
+                argumentType = "float";
 
             return $"List<List<{argumentType}>>";
         }
@@ -114,11 +118,14 @@ public static class EntityDefinitionParser
                 .Replace("Vector.<", string.Empty)
                 .Replace(">", string.Empty);
 
-            if (argumentType.Contains("::")) argumentType = argumentType.Split("::", 2)[1];
+            if (argumentType.Contains("::"))
+                argumentType = argumentType.Split("::", 2)[1];
 
-            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase)) argumentType = "float";
+            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
+                argumentType = "float";
 
-            if (argumentType.Equals("String")) argumentType = "string";
+            if (argumentType.Equals("String"))
+                argumentType = "string";
 
             return $"List<{argumentType}>";
         }
@@ -129,11 +136,14 @@ public static class EntityDefinitionParser
                 .Replace("Vector.<", string.Empty)
                 .Replace(">", string.Empty);
 
-            if (argumentType.Contains("::")) argumentType = argumentType.Split("::", 2)[1];
+            if (argumentType.Contains("::"))
+                argumentType = argumentType.Split("::", 2)[1];
 
-            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase)) argumentType = "float";
+            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
+                argumentType = "float";
 
-            if (argumentType.Equals("String")) argumentType = "string";
+            if (argumentType.Equals("String"))
+                argumentType = "string";
 
             return $"List<{argumentType}>";
         }
@@ -143,16 +153,15 @@ public static class EntityDefinitionParser
 
     public static string GetReferenceName(string fieldTypeName)
     {
-        Console.WriteLine($"Unrecognized typeValue of type name: {fieldTypeName}");
+        //Console.WriteLine($"Unrecognized typeValue of type name: {fieldTypeName}");
 
-        if (fieldTypeName.Equals("bonusCharacteristics")) return "MonsterBonusCharacteristics";
-
-        if (fieldTypeName.Equals("parameters")) return "QuestObjectiveParameters";
-
-        if (fieldTypeName.Equals("coords")) return "Point";
-
-        if (fieldTypeName.Equals("bounds")) return "Rectangle";
-
-        return string.Empty;
+        return fieldTypeName switch
+        {
+            "bonusCharacteristics" => "MonsterBonusCharacteristics",
+            "parameters" => "QuestObjectiveParameters",
+            "coords" => "Point",
+            "bounds" => "Rectangle",
+            _ => string.Empty
+        };
     }
 }
