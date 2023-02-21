@@ -12,29 +12,24 @@ public static class FileReader
         return ReadAllLinesAsync(path, Encoding.UTF8, terminatingLine);
     }
 
-    private static async Task<string[]> ReadAllLinesAsync(string path, Encoding encoding, string? terminatingLine = null)
+    private static async Task<string[]> ReadAllLinesAsync(string path, Encoding encoding,
+        string? terminatingLine = null)
     {
         try
         {
             List<string> lines = new();
 
-            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize, DefaultOptions);
+            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
+                DefaultBufferSize, DefaultOptions);
             using (var reader = new StreamReader(stream, encoding))
             {
                 if (terminatingLine is null)
-                {
                     while (await reader.ReadLineAsync() is { } line)
-                    {
                         lines.Add(line);
-                    }
-                }
                 else
-                {
-                    while (await reader.ReadLineAsync() is { } line && !line.Equals(terminatingLine, StringComparison.Ordinal))
-                    {
+                    while (await reader.ReadLineAsync() is { } line &&
+                           !line.Equals(terminatingLine, StringComparison.Ordinal))
                         lines.Add(line);
-                    }
-                }
             }
 
             return lines.ToArray();

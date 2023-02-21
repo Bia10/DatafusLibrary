@@ -4,8 +4,8 @@ namespace DatafusLibrary.Core.Localization;
 
 public class TranslationLookup
 {
-    private readonly Dictionary<int, string?> _internalDictionary;
     private const int DefaultSize = 999999;
+    private readonly Dictionary<int, string?> _internalDictionary;
 
     public TranslationLookup(int capacity = DefaultSize)
     {

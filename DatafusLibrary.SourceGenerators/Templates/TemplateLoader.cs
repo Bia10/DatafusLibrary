@@ -6,8 +6,8 @@ public static class TemplateLoader
 {
     private static Assembly GetAssembly(Type? assemblyType)
     {
-        var assembly = assemblyType is null 
-            ? Assembly.GetExecutingAssembly() 
+        var assembly = assemblyType is null
+            ? Assembly.GetExecutingAssembly()
             : Assembly.GetAssembly(assemblyType);
 
         return assembly;
@@ -22,9 +22,11 @@ public static class TemplateLoader
             .ToList();
 
         if (!resources.Any())
-            throw new InvalidOperationException($"There is no template with name: {templateName} inside assembly: {assembly.FullName}");
+            throw new InvalidOperationException(
+                $"There is no template with name: {templateName} inside assembly: {assembly.FullName}");
         if (resources.Count > 1)
-            throw new InvalidOperationException($"There is more then one template with name: {templateName} inside assembly: {assembly.FullName}");
+            throw new InvalidOperationException(
+                $"There is more then one template with name: {templateName} inside assembly: {assembly.FullName}");
 
         templateName = resources.Single();
 

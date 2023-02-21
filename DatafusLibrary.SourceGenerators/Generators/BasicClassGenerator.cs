@@ -24,23 +24,20 @@ public class BasicClassGenerator : ISourceGenerator
     public void Execute(GeneratorExecutionContext context)
     {
         if (context.SyntaxReceiver is GeneratedClassSyntaxReceiver classSyntaxReceiver)
-        {
             foreach (var classSyntax in classSyntaxReceiver.CandidateClasses)
             {
                 // has same class name and property name
                 if (classSyntax.GetClassName().Equals("LuaFormula"))
-                {
                     continue;
-                }
 
                 var source = GenerateClass(classSyntax, context);
 
                 context.AddSource(source.FileName, SourceText.From(source.SourceCode, Encoding.UTF8));
             }
-        }
     }
 
-    private static GeneratedSourceFile GenerateClass(ClassDeclarationSyntax classSyntax, GeneratorExecutionContext context)
+    private static GeneratedSourceFile GenerateClass(ClassDeclarationSyntax classSyntax,
+        GeneratorExecutionContext context)
     {
         var classModel = GetClassModel(classSyntax, context.Compilation);
 
@@ -61,7 +58,7 @@ public class BasicClassGenerator : ISourceGenerator
             .Select(property => new PropertyDescriptor
             {
                 Name = property is not null ? property.Identifier.ValueText : string.Empty,
-                Type = property is not null ? property.Type.ToFullString() : string.Empty,
+                Type = property is not null ? property.Type.ToFullString() : string.Empty
             }).ToList();
 
         var namespaces = classSyntax.GetNamespacesFromSymbols(classSemanticModel, compilation);
@@ -73,7 +70,9 @@ public class BasicClassGenerator : ISourceGenerator
             Namespace = classRoot.GetNamespace(),
             Usings = namespaces,
             ClassAttributes = attributeName,
-            ClassAccessModifier = string.IsNullOrEmpty(classSyntax.GetClassModifier()) ? "public" : classSyntax.GetClassModifier(),
+            ClassAccessModifier = string.IsNullOrEmpty(classSyntax.GetClassModifier())
+                ? "public"
+                : classSyntax.GetClassModifier(),
             ClassName = classSyntax.GetClassName(),
             Properties = properties,
             ConstructorParameters = PropertiesToConstructorParams(properties),
@@ -83,7 +82,8 @@ public class BasicClassGenerator : ISourceGenerator
         return classModel;
     }
 
-    private static List<PropertyAssignDescriptor> PropertiesToInjectedProperties(IEnumerable<PropertyDescriptor> properties)
+    private static List<PropertyAssignDescriptor> PropertiesToInjectedProperties(
+        IEnumerable<PropertyDescriptor> properties)
     {
         var injectedProperties = properties
             .Select(property => new PropertyAssignDescriptor

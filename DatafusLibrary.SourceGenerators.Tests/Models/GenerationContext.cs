@@ -5,8 +5,8 @@ namespace DatafusLibrary.SourceGenerators.Tests.Models;
 public class GenerationContext
 {
     public GenerationContext(
-        string outputAssemblyName, 
-        string generationOutputPath, 
+        string outputAssemblyName,
+        string generationOutputPath,
         string inputTemplateName,
         string jsonDataDirectoryPath,
         string generatedSrcFileSuffix,
@@ -54,7 +54,7 @@ public class GenerationContext
         {
             var outputDir = Path.Combine(inputDataPath, outputPath);
 
-            if (Directory.Exists(outputDir)) 
+            if (Directory.Exists(outputDir))
                 return outputDir;
 
             var dirInfo = Directory.CreateDirectory(outputDir);

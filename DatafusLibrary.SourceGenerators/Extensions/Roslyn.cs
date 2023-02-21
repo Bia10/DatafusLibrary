@@ -69,9 +69,9 @@ public static class Roslyn
     public static bool HasAttribute(this ClassDeclarationSyntax classSyntax, string attributeName)
     {
         return classSyntax.AttributeLists.Count > 0 && classSyntax.AttributeLists
-                   .SelectMany(attributeList => attributeList.Attributes
-                   .Where(attributeSyntax => (attributeSyntax.Name as IdentifierNameSyntax)?.Identifier.Text == attributeName))
-                   .Any();
+            .SelectMany(attributeList => attributeList.Attributes
+                .Where(attributeSyntax => (attributeSyntax.Name as IdentifierNameSyntax)?.Identifier.Text == attributeName))
+            .Any();
     }
 
     public static string GetNamespace(this CompilationUnitSyntax classSyntax)
@@ -103,16 +103,17 @@ public static class Roslyn
         }
     }
 
-    public static IEnumerable<MemberDeclarationSyntax> GetMembersOfKind(this ClassDeclarationSyntax classSyntax, SyntaxKind syntaxKind)
+    public static IEnumerable<MemberDeclarationSyntax> GetMembersOfKind(this ClassDeclarationSyntax classSyntax,
+        SyntaxKind syntaxKind)
     {
         return classSyntax.Members.Where(member => member.IsKind(syntaxKind));
     }
 
     public static TypeSyntax AsTypeSyntax(this Type type)
     {
-        var name = type.Name.Replace( '+', '.' );
+        var name = type.Name.Replace('+', '.');
 
-        if (type.IsGenericType) 
+        if (type.IsGenericType)
         {
             name = name.Substring(0, name.IndexOf("`", StringComparison.Ordinal));
 
@@ -131,9 +132,7 @@ public static class Roslyn
     public static bool IsPossibleArrayGenericInterface(this ITypeSymbol typesSymbol)
     {
         if (typesSymbol is not INamedTypeSymbol namedTypeSymbol)
-        {
             return false;
-        }
 
         namedTypeSymbol = namedTypeSymbol.OriginalDefinition;
 
@@ -141,12 +140,10 @@ public static class Roslyn
 
         if (specialType is SpecialType.System_Collections_Generic_IList_T or
             SpecialType.System_Collections_Generic_ICollection_T or
-            SpecialType.System_Collections_Generic_IEnumerable_T or 
-            SpecialType.System_Collections_Generic_IReadOnlyList_T or 
+            SpecialType.System_Collections_Generic_IEnumerable_T or
+            SpecialType.System_Collections_Generic_IReadOnlyList_T or
             SpecialType.System_Collections_Generic_IReadOnlyCollection_T)
-        {
             return true;
-        }
 
         return false;
     }
@@ -162,16 +159,9 @@ public static class Roslyn
             var @namespace = stack.Pop();
 
             foreach (var member in @namespace.GetMembers())
-            {
                 if (member is INamespaceSymbol memberAsNamespace)
-                {
                     stack.Push(memberAsNamespace);
-                }
-                else if (member is INamedTypeSymbol memberAsNamedTypeSymbol)
-                {
-                    yield return memberAsNamedTypeSymbol;
-                }
-            }
+                else if (member is INamedTypeSymbol memberAsNamedTypeSymbol) yield return memberAsNamedTypeSymbol;
         }
     }
 
@@ -186,15 +176,10 @@ public static class Roslyn
             namespaces.Add(typeSymbol.ContainingNamespace.ToString());
         }
 
-        if (typeSymbol.MetadataName.Equals("GeneratedCode"))
-        {
-            namespaces.Add("System.CodeDom.Compiler");
-        }
+        if (typeSymbol.MetadataName.Equals("GeneratedCode")) namespaces.Add("System.CodeDom.Compiler");
 
         if (typeSymbol.MetadataName.Equals("Points") || typeSymbol.MetadataName.Equals("Rectangle"))
-        {
             namespaces.Add("flash.geom");
-        }
 
         // number at end specifies number of T args, 1 = List<T>, ...
         if (typeSymbol.MetadataName.Equals("List`1"))
@@ -206,40 +191,24 @@ public static class Roslyn
 
             if (typeSymbol is INamedTypeSymbol iNamedTypeSymbol)
             {
-                var argType =  iNamedTypeSymbol.TypeArguments.First().Name;
+                var argType = iNamedTypeSymbol.TypeArguments.First().Name;
 
-               if (argType.Equals("TransformData", StringComparison.Ordinal))
-               {
-                   namespaces.Add("com.ankamagames.tiphon.types");
-               }
-               if (argType.Equals("EffectInstance", StringComparison.Ordinal))
-               {
+                if (argType.Equals("TransformData", StringComparison.Ordinal))
+                    namespaces.Add("com.ankamagames.tiphon.types");
+                if (argType.Equals("EffectInstance", StringComparison.Ordinal))
                     namespaces.Add("com.ankamagames.dofus.datacenter");
-               }
-               if (argType.Equals("EffectZone", StringComparison.Ordinal))
-               {
-                   namespaces.Add("com.ankamagames.dofus.datacenter.spells");
-               }
-               if (argType.Equals("EffectInstanceDice", StringComparison.Ordinal))
-               {
-                   namespaces.Add("com.ankamagames.dofus.datacenter.effects.instances");
-               }
-               if (argType.Equals("GuildRight", StringComparison.Ordinal))
-               {
-                   namespaces.Add("com.ankamagames.dofus.datacenter.guild");
-               }
-               if (argType.Equals("Collectable", StringComparison.Ordinal))
-               {
-                   namespaces.Add("com.ankamagames.dofus.datacenter.collection");
-               }
-               if (argType.Equals("PlaylistSound", StringComparison.Ordinal))
-               {
-                   namespaces.Add("com.ankamagames.dofus.datacenter.ambientSounds");
-               }
-               if (argType.Equals("PopupButton", StringComparison.Ordinal))
-               {
-                   namespaces.Add("com.ankamagames.dofus.datacenter.popup");
-               }
+                if (argType.Equals("EffectZone", StringComparison.Ordinal))
+                    namespaces.Add("com.ankamagames.dofus.datacenter.spells");
+                if (argType.Equals("EffectInstanceDice", StringComparison.Ordinal))
+                    namespaces.Add("com.ankamagames.dofus.datacenter.effects.instances");
+                if (argType.Equals("GuildRight", StringComparison.Ordinal))
+                    namespaces.Add("com.ankamagames.dofus.datacenter.guild");
+                if (argType.Equals("Collectable", StringComparison.Ordinal))
+                    namespaces.Add("com.ankamagames.dofus.datacenter.collection");
+                if (argType.Equals("PlaylistSound", StringComparison.Ordinal))
+                    namespaces.Add("com.ankamagames.dofus.datacenter.ambientSounds");
+                if (argType.Equals("PopupButton", StringComparison.Ordinal))
+                    namespaces.Add("com.ankamagames.dofus.datacenter.popup");
             }
 
             return namespaces;
@@ -248,19 +217,18 @@ public static class Roslyn
         return namespaces;
     }
 
-    public static List<string> GetNamespacesFromSymbols(this ClassDeclarationSyntax classSyntax, SemanticModel classSemanticModel, Compilation compilation)
+    public static List<string> GetNamespacesFromSymbols(this ClassDeclarationSyntax classSyntax,
+        SemanticModel classSemanticModel, Compilation compilation)
     {
         var requiredNamespaces = new List<string>();
 
-        var symbols =  classSyntax.GetAllSymbols(classSemanticModel);
+        var symbols = classSyntax.GetAllSymbols(classSemanticModel);
 
         foreach (var (symbol, typeSymbol) in symbols)
         {
             if (symbol is not null)
-            {
                 //Console.WriteLine($"Symbol name: {symbol.Name} namespace: {symbol.ContainingNamespace}  module: {symbol.ContainingModule}");
                 requiredNamespaces.Add(symbol.ContainingNamespace.ToString());
-            }
 
             var namespaceOfCollection = typeSymbol.GetNamespaceFromMetadataName(compilation);
             if (namespaceOfCollection is not null && namespaceOfCollection.Any())
@@ -277,13 +245,13 @@ public static class Roslyn
         return requiredNamespaces.Distinct().ToList();
     }
 
-    public static IEnumerable<(ISymbol? Symbol, ITypeSymbol typeSymbol)> GetAllSymbols(this ClassDeclarationSyntax classSyntax, SemanticModel classSemanticModel)
+    public static IEnumerable<(ISymbol? Symbol, ITypeSymbol typeSymbol)> GetAllSymbols(
+        this ClassDeclarationSyntax classSyntax, SemanticModel classSemanticModel)
     {
         var noDuplicatesSymbol = new HashSet<ISymbol>(SymbolEqualityComparer.Default);
         var noDuplicateTypeSymbol = new HashSet<ITypeSymbol>(SymbolEqualityComparer.Default);
 
         foreach (var node in classSyntax.DescendantNodesAndSelf())
-        {
             switch (node.Kind())
             {
                 //case SyntaxKind.GenericName:
@@ -313,16 +281,16 @@ public static class Roslyn
                     }
                     else if (symbol.Symbol is null && typeSymbol is not null)
                     {
-                        if(noDuplicateTypeSymbol.Add(typeSymbol))
+                        if (noDuplicateTypeSymbol.Add(typeSymbol))
                             yield return (null, typeSymbol);
 
-                        Console.WriteLine($"No symbol found for symbolInfo: {node.Kind()} rawKind: {node.RawKind} nodeName: {node.ToFullString()}");
+                        Console.WriteLine(
+                            $"No symbol found for symbolInfo: {node.Kind()} rawKind: {node.RawKind} nodeName: {node.ToFullString()}");
 
                         Console.WriteLine($"typesymbol: {typeSymbol.MetadataName}");
                     }
 
                     break;
             }
-        }
     }
 }

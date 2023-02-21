@@ -14,8 +14,6 @@ public class GeneratedClassSyntaxReceiver : ISyntaxReceiver
         var attributeName = nameof(GeneratedCodeAttribute).Replace("Attribute", string.Empty);
 
         if (syntaxNode is ClassDeclarationSyntax classSyntax && classSyntax.HasAttribute(attributeName))
-        {
             CandidateClasses.Add(classSyntax);
-        }
     }
 }

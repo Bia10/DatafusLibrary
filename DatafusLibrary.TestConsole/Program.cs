@@ -1,4 +1,6 @@
 ﻿using DatafusLibrary.SourceGenerators.Tests.Generation;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace DatafusLibrary.TestConsole;
 
@@ -27,11 +29,11 @@ public static class Program
 
         var xUnit = new XunitFrontController(
             AppDomainSupport.IfAvailable,
-            assemblyLocation, 
-            "C:\\Users\\Bia\\source\\repos\\DatafusLibrary\\DatafusLibrary.TestConsole\\xunit.runner.json",
+            assemblyLocation,
+            null,
             false,
-            null, 
-            null, 
+            null,
+            null,
             testMessageSink);
 
         var assemblyOptions = new TestAssemblyConfiguration
@@ -47,7 +49,7 @@ public static class Program
 
         xUnit.Find(true, testMessageSink, discoveryOptions);
         xUnit.RunAll(testMessageSink, discoveryOptions, executionOptions);
-        
+
         try
         {
             Finished.WaitOne();
@@ -65,35 +67,47 @@ public static class Program
         return Task.CompletedTask;
     }
 
-
-    private static void DiscoveryEventSink_TestCaseDiscoveryMessageEvent(MessageHandlerArgs<ITestCaseDiscoveryMessage> args)
+    private static void DiscoveryEventSink_TestCaseDiscoveryMessageEvent(
+        MessageHandlerArgs<ITestCaseDiscoveryMessage> args)
     {
         lock (ConsoleLock)
-            Console.WriteLine($"TestDiscovery event, \n found test: {args.Message.TestCase.TestMethod.Method.Name} \n in class: {args.Message.TestClass.Class.Name}");
+        {
+            Console.WriteLine(
+                $"TestDiscovery event, \n found test: {args.Message.TestCase.TestMethod.Method.Name} \n in class: {args.Message.TestClass.Class.Name}");
+        }
     }
 
-    private static void DiscoveryEventSink_DiscoveryCompleteMessageEvent(MessageHandlerArgs<IDiscoveryCompleteMessage> args)
+    private static void DiscoveryEventSink_DiscoveryCompleteMessageEvent(
+        MessageHandlerArgs<IDiscoveryCompleteMessage> args)
     {
         lock (ConsoleLock)
+        {
             Console.WriteLine($"DiscoveryComplete event at: {DateTime.Now}");
+        }
     }
 
     private static void MessagesEventSink_ErrorMessageEvent(MessageHandlerArgs<IErrorMessage> args)
     {
         lock (ConsoleLock)
+        {
             Console.WriteLine($"ErrorMessage event: {args.Message.Messages}");
+        }
     }
 
     private static void MessagesEventSink_DiagnosticMessageEvent(MessageHandlerArgs<IDiagnosticMessage> args)
     {
         lock (ConsoleLock)
+        {
             Console.WriteLine($"DiagnosticMessage event: {args.Message.Message}");
+        }
     }
 
     private static void ExecutionEventSink_TestOutputEvent(MessageHandlerArgs<ITestOutput> args)
     {
         lock (ConsoleLock)
+        {
             Console.WriteLine($"TestOutput event: {args.Message.Output}");
+        }
     }
 
     private static void ExecutionEvenSink_TestFailedEvent(MessageHandlerArgs<ITestFailed> args)
@@ -104,18 +118,21 @@ public static class Program
             Console.WriteLine($"TestFailed event, messages: \n {string.Join(",", args.Message.Messages)}");
         }
     }
- 
+
     private static void ExecutionEvenSink_TestPassedEvent(MessageHandlerArgs<ITestPassed> args)
     {
         lock (ConsoleLock)
+        {
             Console.WriteLine($"TestPassed event: {args.Message.Test.DisplayName}");
+        }
     }
- 
+
     private static void ExecutionEvenSink_TestAssemblyStartingEvent(MessageHandlerArgs<ITestAssemblyStarting> args)
     {
         lock (ConsoleLock)
         {
-            Console.WriteLine($"Starting test run at: {args.Message.StartTime} with test env: {args.Message.TestFrameworkDisplayName}");
+            Console.WriteLine(
+                $"Starting test run at: {args.Message.StartTime} with test env: {args.Message.TestFrameworkDisplayName}");
             Console.WriteLine($"Testing assembly: {args.Message.TestAssembly.Assembly.Name}");
             Console.WriteLine($"Test cases count: {args.Message.TestCases.Count()}");
         }
@@ -128,7 +145,7 @@ public static class Program
             Console.WriteLine($"Tests failed: {args.Message.TestsFailed}");
             Console.WriteLine($"Tests run: {args.Message.TestsRun}");
         }
- 
+
         Finished.Set();
     }
 }

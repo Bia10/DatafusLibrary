@@ -1,5 +1,6 @@
 ﻿using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using DatafusLibrary.Core.DataDefinitions;
 using DatafusLibrary.Core.Extensions;
 using DatafusLibrary.Core.IO;
@@ -41,9 +42,7 @@ public static partial class EntityParser
         var allEntityClassesPackageGroups = await GetAllEntityClassesPackageGroups(dirPath);
 
         foreach (var basicClassesOfPackageGroup in allEntityClassesPackageGroups.Select(GetClassesFromPackageGroup))
-        {
             allBasicClasses.AddRange(basicClassesOfPackageGroup);
-        }
 
         return allBasicClasses;
     }
@@ -78,9 +77,7 @@ public static partial class EntityParser
             var joined = string.Join(string.Empty, linesUpToData);
 
             if (joined.EndsWith(','))
-            {
                 joined = MyRegex().Replace(joined, "}");
-            }
 
             var entityType = await Json.DeserializeAsync<Entity>(joined);
 
@@ -99,9 +96,7 @@ public static partial class EntityParser
                 var entityDefinition = await Json.DeserializeAsync<List<EntityType>>(currentDefinition);
 
                 if (entityDefinition is not null)
-                {
                     entityDefinitions.Add(entityDefinition);
-                }
             }
         }
 
@@ -121,7 +116,7 @@ public static partial class EntityParser
 
     public static async Task<List<IGrouping<string?, EntityType>>> GetAllEntityClassesPackageGroups(string pathToDir)
     {
-       var entityClasses = await GetAllEntityClasses(pathToDir);
+        var entityClasses = await GetAllEntityClasses(pathToDir);
 
         var listOfEntitiesGroupedByPackage = entityClasses
             .GroupBy(entityClass => entityClass.packageName)
@@ -134,14 +129,15 @@ public static partial class EntityParser
         return listOfEntitiesGroupedByPackage;
     }
 
-    public static async Task<IGrouping<string?, EntityType>> GetEntityClassesGroupsByPackageNames(string pathToDir, string packageName)
+    public static async Task<IGrouping<string?, EntityType>> GetEntityClassesGroupsByPackageNames(string pathToDir,
+        string packageName)
     {
         var entityClasses = await GetAllEntityClasses(pathToDir);
 
         var entityClassesGroupedByPackageName = entityClasses
             .GroupBy(entityClass => entityClass.packageName)
             .Select(grouping => grouping)
-            .Where(grouping => !string.IsNullOrEmpty(grouping.Key) && 
+            .Where(grouping => !string.IsNullOrEmpty(grouping.Key) &&
                                grouping.Key.Equals(packageName, StringComparison.Ordinal))
             .ToList()
             .First();
@@ -164,10 +160,10 @@ public static partial class EntityParser
             var baseClass = EntityDefinitionParser.ParseToClassModel(entityClass, new BasicClass());
             baseClasses.Add(baseClass);
         }
-        
+
         return baseClasses;
     }
 
-    [System.Text.RegularExpressions.GeneratedRegex(",$")]
-    private static partial System.Text.RegularExpressions.Regex MyRegex();
+    [GeneratedRegex(",$")]
+    private static partial Regex MyRegex();
 }

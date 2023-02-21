@@ -35,7 +35,9 @@ public class BasicClass
 
     public string BaseConstructorOpeningBrace => string.IsNullOrEmpty(ClassBase) ? string.Empty : "(";
 
-    public IEnumerable<string> BaseConstructor => string.IsNullOrEmpty(ClassBase) ? new List<string>() : ConstructorParameters.Select(x => x.Name);
+    public IEnumerable<string> BaseConstructor => string.IsNullOrEmpty(ClassBase)
+        ? new List<string>()
+        : ConstructorParameters.Select(x => x.Name);
 
     public string BaseConstructorClosingBrace => string.IsNullOrEmpty(ClassBase) ? string.Empty : ")";
 }

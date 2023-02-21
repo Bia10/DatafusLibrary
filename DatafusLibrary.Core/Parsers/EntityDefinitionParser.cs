@@ -14,10 +14,8 @@ public static class EntityDefinitionParser
         List<BasicClass> basicClasses = new();
 
         if (entityDefinitionsJson is not null && entityDefinitionsJson.Any())
-        {
             basicClasses.AddRange(entityDefinitionsJson
                 .Select(entityDefinition => ParseToClassModel(entityDefinition, new BasicClass())));
-        }
 
         return basicClasses;
     }
@@ -48,7 +46,7 @@ public static class EntityDefinitionParser
         {
             var (name, type, _) = ParseField(field);
 
-            var property = new PropertyDescriptor()
+            var property = new PropertyDescriptor
             {
                 Name = char.ToUpper(name[0]) + name[1..],
                 Type = type
@@ -65,7 +63,8 @@ public static class EntityDefinitionParser
         (string name, string type, Field? vectorTypes) result = new()
         {
             name = encodedField.name ?? string.Empty,
-            type = DecodeTypeValueToTypeStr(encodedField.type, encodedField.name ?? string.Empty, encodedField.vectorTypes),
+            type = DecodeTypeValueToTypeStr(encodedField.type, encodedField.name ?? string.Empty,
+                encodedField.vectorTypes),
             vectorTypes = encodedField.vectorTypes
         };
 
@@ -87,19 +86,14 @@ public static class EntityDefinitionParser
         };
 
         if (string.IsNullOrEmpty(fieldType))
-        {
             Console.WriteLine($"Unrecognized value: {fieldTypeValue} of type name: {fieldTypeName}");
-        }
 
         return fieldType;
     }
 
     public static string GetVectorizedType(int fieldTypeValue, Field? vectorType)
     {
-        if (string.IsNullOrEmpty(vectorType?.name))
-        {
-            throw new ArgumentNullException(nameof(vectorType));
-        }
+        if (string.IsNullOrEmpty(vectorType?.name)) throw new ArgumentNullException(nameof(vectorType));
 
         if (vectorType.name.StartsWith("Vector.<Vector.<"))
         {
@@ -107,15 +101,9 @@ public static class EntityDefinitionParser
                 .Replace("Vector.<Vector.<", string.Empty)
                 .Replace(">>", string.Empty);
 
-            if (argumentType.Contains("::"))
-            {
-                argumentType = argumentType.Split("::", 2)[1];
-            }
+            if (argumentType.Contains("::")) argumentType = argumentType.Split("::", 2)[1];
 
-            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
-            {
-                argumentType = "float";
-            }
+            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase)) argumentType = "float";
 
             return $"List<List<{argumentType}>>";
         }
@@ -126,20 +114,11 @@ public static class EntityDefinitionParser
                 .Replace("Vector.<", string.Empty)
                 .Replace(">", string.Empty);
 
-            if (argumentType.Contains("::"))
-            {
-                argumentType = argumentType.Split("::", 2)[1];
-            }
+            if (argumentType.Contains("::")) argumentType = argumentType.Split("::", 2)[1];
 
-            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
-            {
-                argumentType = "float";
-            }
+            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase)) argumentType = "float";
 
-            if (argumentType.Equals("String"))
-            {
-                argumentType = "string";
-            }
+            if (argumentType.Equals("String")) argumentType = "string";
 
             return $"List<{argumentType}>";
         }
@@ -150,24 +129,15 @@ public static class EntityDefinitionParser
                 .Replace("Vector.<", string.Empty)
                 .Replace(">", string.Empty);
 
-            if (argumentType.Contains("::"))
-            {
-                argumentType = argumentType.Split("::", 2)[1];
-            }
+            if (argumentType.Contains("::")) argumentType = argumentType.Split("::", 2)[1];
 
-            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
-            {
-                argumentType = "float";
-            }
+            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase)) argumentType = "float";
 
-            if (argumentType.Equals("String"))
-            {
-                argumentType = "string";
-            }
+            if (argumentType.Equals("String")) argumentType = "string";
 
             return $"List<{argumentType}>";
         }
-            
+
         return string.Empty;
     }
 
@@ -175,25 +145,13 @@ public static class EntityDefinitionParser
     {
         Console.WriteLine($"Unrecognized typeValue of type name: {fieldTypeName}");
 
-        if (fieldTypeName.Equals("bonusCharacteristics"))
-        {
-            return "MonsterBonusCharacteristics";
-        }
+        if (fieldTypeName.Equals("bonusCharacteristics")) return "MonsterBonusCharacteristics";
 
-        if (fieldTypeName.Equals("parameters"))
-        {
-            return "QuestObjectiveParameters";
-        }
+        if (fieldTypeName.Equals("parameters")) return "QuestObjectiveParameters";
 
-        if (fieldTypeName.Equals("coords"))
-        {
-            return "Point";
-        }
+        if (fieldTypeName.Equals("coords")) return "Point";
 
-        if (fieldTypeName.Equals("bounds"))
-        {
-            return "Rectangle";
-        }
+        if (fieldTypeName.Equals("bounds")) return "Rectangle";
 
         return string.Empty;
     }

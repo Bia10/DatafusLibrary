@@ -13,11 +13,11 @@ public static class GeneratorRunner
     {
         var syntaxTrees = new[]
         {
-             CSharpSyntaxTree.ParseText(source, 
-                 new CSharpParseOptions(LanguageVersion.Preview), string.Empty, Encoding.UTF8)
+            CSharpSyntaxTree.ParseText(source,
+                new CSharpParseOptions(LanguageVersion.Preview), string.Empty, Encoding.UTF8)
         };
 
-        var references = CompilationReferences.GetCompileReferences();
+        var references = CompilationReferences.GetPredefined();
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
         var compilation = CSharpCompilation.Create(nameof(GeneratorRunner), syntaxTrees, references, options);
 
@@ -48,8 +48,8 @@ public static class GeneratorRunner
         if (syntaxTree is null)
             throw new InvalidOperationException();
 
-        return SyntaxTreeIsOfGeneratorType(syntaxTree, generator) 
-            ? syntaxTree.GetText().ToString() 
+        return SyntaxTreeIsOfGeneratorType(syntaxTree, generator)
+            ? syntaxTree.GetText().ToString()
             : string.Empty;
     }
 

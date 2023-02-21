@@ -24,7 +24,7 @@ public class SpellsDeserializationTest
         await enTranslation.LoadTranslationFile("C:\\en.json");
 
         var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-        var entitiesBase = Path.GetFullPath(Path.Combine(desktopPath, @".\Dofus2Botting\data\entities_json"));
+        var entitiesBase = Path.GetFullPath(Path.Combine(desktopPath, @".\Dofus2Botting\data\entities_json\"));
 
         var pathToSpellsJson = entitiesBase + "Spells.json";
         var pathToSpellStatesJson = entitiesBase + "SpellStates.json";
@@ -83,3 +83,4 @@ public class SpellsDeserializationTest
         }
     }
 }
+

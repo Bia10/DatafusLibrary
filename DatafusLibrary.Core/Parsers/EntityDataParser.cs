@@ -24,6 +24,6 @@ public static class EntityDataParser
 
         var (_, dataJson) = EntityParser.ParseToStringTuple(entity);
 
-         return await Json.DeserializeAsync<T>(dataJson, Options);
+        return await Json.DeserializeAsync<T>(dataJson, Options);
     }
 }
