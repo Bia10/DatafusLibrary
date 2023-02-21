@@ -46,47 +46,41 @@ public static class CompilationReferences
         return references;
     }
 
-    public static IEnumerable<MetadataReference> GetPredefined()
+    public static IEnumerable<MetadataReference> GetPredefined(bool useRuntime = false)
     {
-        var requiredLibs = new[]
+        const string refDirectory = 
+            "C:\\Program Files\\dotnet\\packs\\Microsoft.NETCore.App.Ref\\7.0.3\\ref\\net7.0\\";
+
+        var requiredAssemblies = new[]
         {
             "netstandard.dll",
             "mscorlib.dll",
             "System.dll",
             "System.Runtime.dll",
-            "System.Collections.dll",
+            "System.Collections.dll"
         };
 
-        var compileLibraries = DependencyContext.Default?.CompileLibraries
-            .Where(compileLib => compileLib.Type.Equals("referenceassembly", StringComparison.Ordinal))
-            .Where(compileLib => !string.IsNullOrEmpty(compileLib.Path))
-            .ToList();
+        var assemblyPaths = useRuntime switch
+        {
+            true => Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll"),
+            false => Directory.GetFiles(refDirectory, "*.dll")
+        };
 
+        var reqAssembliesPath = (
+            from requiredAssembly in requiredAssemblies
+            from assemblyPath in assemblyPaths 
+            where assemblyPath.EndsWith(requiredAssembly, StringComparison.Ordinal) 
+            select assemblyPath).ToList();
 
-        var runtimeAssemblies = Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll");
-        var refAssemblies = Directory.GetFiles("C:\\Program Files\\dotnet\\packs\\Microsoft.NETCore.App.Ref\\7.0.3\\ref\\net7.0\\", "*.dll");
-
-
-        var matchingRequest = refAssemblies
-            .Where(assembly => assembly.EndsWith(requiredLibs[0]) ||
-                               assembly.EndsWith(requiredLibs[1]) ||
-                               assembly.EndsWith(requiredLibs[2]) ||
-                               assembly.EndsWith(requiredLibs[3]) ||
-                               assembly.EndsWith(requiredLibs[4]));
-
-        var paths = new List<string>(matchingRequest);
-
-        var metadataReferences = paths
+        var metadataReferences = reqAssembliesPath
             .Select(libraryPath => MetadataReference.CreateFromFile(libraryPath))
             .ToList();
 
         if (metadataReferences is null || !metadataReferences.Any())
             throw new InvalidOperationException("No suitable references in compile libraries found!");
 
-
-        return metadataReferences.DistinctBy(meta => meta.FilePath);
+        return metadataReferences;
     }
-
 
     private static bool IsLibrarySourceGenerator(Library library)
     {

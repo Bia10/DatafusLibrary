@@ -43,9 +43,9 @@ public static class GeneratorRunner
 
     private static string GetGeneratedCode(ISourceGenerator generator, Compilation outputCompilation)
     {
-        var syntaxTree = outputCompilation.SyntaxTrees.FirstOrDefault();
+        var syntaxTree = outputCompilation.SyntaxTrees.LastOrDefault();
 
-        if (syntaxTree is null)
+        if (syntaxTree is null || string.IsNullOrEmpty(syntaxTree.FilePath))
             throw new InvalidOperationException();
 
         return SyntaxTreeIsOfGeneratorType(syntaxTree, generator)
