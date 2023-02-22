@@ -148,7 +148,6 @@ public static class Roslyn
         return false;
     }
 
-
     private static IEnumerable<INamedTypeSymbol> GetNamedTypeSymbols(Compilation compilation)
     {
         var stack = new Stack<INamespaceSymbol>();
@@ -173,23 +172,35 @@ public static class Roslyn
 
     public static List<string> GetNamespaceFromMetadataName(this ITypeSymbol typeSymbol, Compilation compilation, ref HashSet<string> namespaceCollection)
     {
-        if (!string.IsNullOrEmpty(typeSymbol.ContainingNamespace.ToString()) &&
-            !typeSymbol.ContainingNamespace.ToString().Equals("<global namespace>"))
+        var compUnit = compilation.SyntaxTrees.First().GetCompilationUnitRoot();
+        var namespaceDeclarationSyntax = compUnit.Members.OfType<NamespaceDeclarationSyntax>().First();
+        var classDeclarationSyntax = namespaceDeclarationSyntax.Members.OfType<ClassDeclarationSyntax>().First();
+        var className = classDeclarationSyntax?.GetClassName();
+
+        Console.WriteLine($"className : {className}");
+        Console.WriteLine($"typeSymbol namespace: {typeSymbol.ContainingNamespace} metaName: {typeSymbol.MetadataName} name: {typeSymbol.Name}");
+
+       if (!string.IsNullOrEmpty(typeSymbol.ContainingNamespace.ToString()) &&
+           !typeSymbol.ContainingNamespace.ToString().Equals("<global namespace>"))
         {
-            //Console.WriteLine($"typeSymbol: {typeSymbol.ContainingNamespace}");
             namespaceCollection.Add(typeSymbol.ContainingNamespace.ToString());
         }
 
+        const string ankamaBase = "com.ankamagames.";
+        const string dofusDataBase = "com.ankamagames.dofus.datacenter.";
+
         switch (typeSymbol.MetadataName)
         {
+            case "QuestObjectiveParameters" when className is "QuestObjective":
+                namespaceCollection.Add(dofusDataBase + "quest.objectives");
+                break;
             case "GeneratedCode":
                 namespaceCollection.Add("System.CodeDom.Compiler");
                 break;
-            case "Points":
-            case "Rectangle":
+            case "Point" or "Rectangle":
                 namespaceCollection.Add("flash.geom");
                 break;
-            case "List`1":
+            case "List`1" or "List`2":
             {
                 var iListTypeSymbol = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IList_T);
                 var typeNamespace = iListTypeSymbol.ContainingNamespace.ToString();
@@ -198,24 +209,36 @@ public static class Roslyn
 
                 if (typeSymbol is INamedTypeSymbol iNamedTypeSymbol)
                 {
-                    var argType = iNamedTypeSymbol.TypeArguments.First().Name;
+                    var typeArgs = iNamedTypeSymbol.TypeArguments.First();
+                    if (typeArgs is INamedTypeSymbol namedTypeArgs && namedTypeArgs.TypeArguments.Any())
+                    {
+                        var typeName = namedTypeArgs.TypeArguments.First().Name;
+                        if (typeName.Equals(className, StringComparison.Ordinal))
+                        {
+                            Console.WriteLine($"Type references itself! argTypeName: {typeName} className: {className}");
+                            break;
+                        }
+                    }
+                    
+                    var argTypeName = typeArgs.Name;
+                    if (argTypeName.Equals(className, StringComparison.Ordinal))
+                    {
+                        Console.WriteLine($"Type references itself! argTypeName: {argTypeName} className: {className}");
+                        break;
+                    }
 
-                    if (argType.Equals("TransformData", StringComparison.Ordinal))
-                        namespaceCollection.Add("com.ankamagames.tiphon.types");
-                    if (argType.Equals("EffectInstance", StringComparison.Ordinal))
-                        namespaceCollection.Add("com.ankamagames.dofus.datacenter");
-                    if (argType.Equals("EffectZone", StringComparison.Ordinal))
-                        namespaceCollection.Add("com.ankamagames.dofus.datacenter.spells");
-                    if (argType.Equals("EffectInstanceDice", StringComparison.Ordinal))
-                        namespaceCollection.Add("com.ankamagames.dofus.datacenter.effects.instances");
-                    if (argType.Equals("GuildRight", StringComparison.Ordinal))
-                        namespaceCollection.Add("com.ankamagames.dofus.datacenter.guild");
-                    if (argType.Equals("Collectable", StringComparison.Ordinal))
-                        namespaceCollection.Add("com.ankamagames.dofus.datacenter.collection");
-                    if (argType.Equals("PlaylistSound", StringComparison.Ordinal))
-                        namespaceCollection.Add("com.ankamagames.dofus.datacenter.ambientSounds");
-                    if (argType.Equals("PopupButton", StringComparison.Ordinal))
-                        namespaceCollection.Add("com.ankamagames.dofus.datacenter.popup");
+                    if (argTypeName.Equals("EffectInstance", StringComparison.Ordinal))
+                        namespaceCollection.Add(dofusDataBase + "effects");
+
+                    if (argTypeName.Equals("EffectInstanceDice", StringComparison.Ordinal) ||
+                        argTypeName.Equals("EffectInstanceInteger", StringComparison.Ordinal))
+                        namespaceCollection.Add(dofusDataBase + "effects.instances");
+
+                    if (argTypeName.Equals("TransformData", StringComparison.Ordinal))
+                        namespaceCollection.Add(ankamaBase + "tiphon.types");
+
+                    if (argTypeName.Equals("PlaylistSound", StringComparison.Ordinal))
+                        namespaceCollection.Add(dofusDataBase + "ambientSounds");
                 }
                 break;
             }
@@ -234,7 +257,15 @@ public static class Roslyn
         {
             if (symbol is not null && !string.IsNullOrEmpty(symbol.ContainingNamespace.ToString()))
             {
-                if (requiredNamespaces.Add(symbol.ContainingNamespace.ToString()))
+                var nameSpaceName = symbol.ContainingNamespace.ToString();
+
+                if (nameSpaceName.Equals("System", StringComparison.Ordinal))
+                    continue;
+
+                if (symbol.Name.Equals(typeSymbol.Name))
+                    continue;
+
+                if (requiredNamespaces.Add(nameSpaceName))
                     continue;
             }
 
@@ -248,10 +279,6 @@ public static class Roslyn
                 }
             }
         }
-
-        requiredNamespaces.Add("com.ankamagames.dofus.datacenter.quest.objectives");
-        requiredNamespaces.Add("com.ankamagames.dofus.datacenter.effects");
-        requiredNamespaces.Add("flash.geom");
 
         return requiredNamespaces.ToList();
     }
