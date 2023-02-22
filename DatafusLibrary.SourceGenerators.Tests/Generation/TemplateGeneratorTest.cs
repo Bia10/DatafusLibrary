@@ -3,22 +3,36 @@ using System.Diagnostics;
 using DatafusLibrary.Core.Parsers;
 using DatafusLibrary.SourceGenerators.Generators;
 using DatafusLibrary.SourceGenerators.Templates;
+using DatafusLibrary.SourceGenerators.Tests.Helpers.NLog;
 using DatafusLibrary.SourceGenerators.Tests.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using NLog;
+using NLog.Config;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace DatafusLibrary.SourceGenerators.Tests.Generation;
 
-public class TemplateGeneratorTest
+public class TemplateGeneratorTest : IDisposable
 {
     private readonly GenerationContext _generationContext;
-    private readonly ITestOutputHelper _output;
+    private readonly ILogger _logger;
 
-    public TemplateGeneratorTest(ITestOutputHelper output)
+    public TemplateGeneratorTest(ITestOutputHelper iTestOutputHelper)
     {
-        _output = output;
+        var logFactory = new LogFactory();
+        logFactory.ThrowExceptions = true;
+        var configuration = new LoggingConfiguration();
+        var testOutputTarget = new TestOutputTarget();
+
+        testOutputTarget.Add(iTestOutputHelper, nameof(TemplateGeneratorTest));
+        configuration.AddRuleForAllLevels(testOutputTarget, nameof(TemplateGeneratorTest));
+        logFactory.Configuration = configuration;
+
+        _logger = logFactory.GetLogger(nameof(TemplateGeneratorTest));
+        _logger.Info("TemplateGenerator Test Init!");
+
         _generationContext = new GenerationContext(
             successSyntaxTrees: new List<SyntaxTree>(),
             failedSyntaxTrees: new List<SyntaxTree>(),
@@ -31,6 +45,12 @@ public class TemplateGeneratorTest
         {
             JsonDataDirectoryPath = GenerationContext.SetInputDataPath()
         };
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _logger.Factory.Dispose();
     }
 
     [Fact]
@@ -63,11 +83,15 @@ public class TemplateGeneratorTest
 
             Debug.Assert(generationResult.Compilation.SyntaxTrees.Count().Equals(2));
 
-            _output.WriteLine(generationResult.GetDiagnostics());
+            if (generationResult.GetDiagnostics().Any())
+                _logger.Info(generationResult.GetDiagnostics());
 
             _generationContext.GenerationResults.Add(generationResult);
             _generationContext.SuccessSyntaxTrees.Add(generationResult.Compilation.SyntaxTrees.Last());
         }
+
+        _logger.Info(_generationContext.GenerationResults.Count);
+        _logger.Info(_generationContext.SuccessSyntaxTrees.Count);
 
         var syntaxTrees = _generationContext.SuccessSyntaxTrees.DistinctBy(file => file.FilePath).ToList();
         var references = generationResult?.Compilation.References;
@@ -91,7 +115,7 @@ public class TemplateGeneratorTest
         Debug.Assert(result.Diagnostics.IsEmpty);
 
         if (result.Diagnostics.Any())
-            _output.WriteLine(string.Join(Environment.NewLine,
+            _logger.Info(string.Join(Environment.NewLine,
                 result.Diagnostics.Select(diagnostic => diagnostic.Location.ToString())));
     }
 }

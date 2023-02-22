@@ -8,6 +8,8 @@ public static class Program
 {
     private static readonly object ConsoleLock = new();
     private static readonly ManualResetEvent Finished = new(false);
+    private static IEnumerable<ITestCase> _testCasesFound = new List<ITestCase>();
+    private static bool _discoveryDone;
 
     private static Task Main()
     {
@@ -26,7 +28,7 @@ public static class Program
         testMessageSink.Execution.TestPassedEvent += ExecutionEvenSink_TestPassedEvent;
         testMessageSink.Execution.TestFailedEvent += ExecutionEvenSink_TestFailedEvent;
         testMessageSink.Execution.TestOutputEvent += ExecutionEventSink_TestOutputEvent;
-
+        
         testMessageSink.Runner.TestExecutionSummaryEvent += ExecutionEventSink_TestSummaryEvent;
         
         var xUnit = new XunitFrontController(
@@ -46,15 +48,25 @@ public static class Program
             MethodDisplay = TestMethodDisplay.ClassAndMethod
         };
 
+        Console.WriteLine($"TestFrameworkDisplayName: {xUnit.TestFrameworkDisplayName}" +
+                          $"\n TargetFramework: {xUnit.TargetFramework}" +
+                          $"\n CanUseAppDomains: {xUnit.CanUseAppDomains}");
+
         var discoveryOptions = TestFrameworkOptions.ForDiscovery(assemblyOptions);
         var executionOptions = TestFrameworkOptions.ForExecution(assemblyOptions);
 
         xUnit.Find(true, testMessageSink, discoveryOptions);
-        xUnit.RunAll(testMessageSink, discoveryOptions, executionOptions);
 
-        Console.WriteLine($"TestFrameworkDisplayName: {xUnit.TestFrameworkDisplayName}" +
-                          $" TargetFramework: {xUnit.TargetFramework}" +
-                          $" CanUseAppDomains: {xUnit.CanUseAppDomains}");
+        while (!_discoveryDone)
+        {
+        }
+
+        var testCaseOrderer = new TestCaseOrderer(testMessageSink);
+
+        _testCasesFound = testCaseOrderer.OrderTestCases(_testCasesFound);
+
+        xUnit.RunTests(_testCasesFound, testMessageSink, executionOptions);
+
         try
         {
             Finished.WaitOne();
@@ -92,6 +104,8 @@ public static class Program
         {
             Console.WriteLine(
                 $"TestDiscovery event, \n found test: {args.Message.TestCase.TestMethod.Method.Name} \n in class: {args.Message.TestClass.Class.Name}");
+
+            _testCasesFound = _testCasesFound.Append(args.Message.TestCase);
         }
     }
 
@@ -101,6 +115,7 @@ public static class Program
         lock (ConsoleLock)
         {
             Console.WriteLine($"DiscoveryComplete event at: {DateTime.Now}");
+            _discoveryDone = true;
         }
     }
 
@@ -122,10 +137,10 @@ public static class Program
 
     private static void ExecutionEventSink_TestOutputEvent(MessageHandlerArgs<ITestOutput> args)
     {
-        //lock (ConsoleLock)
-        //{
-        //    Console.WriteLine($"TestOutput event: {args.Message.Output}");
-        //}
+        lock (ConsoleLock)
+        {
+            Console.WriteLine($"TestOutput: {args.Message.Output}");
+        }
     }
 
     private static void ExecutionEvenSink_TestFailedEvent(MessageHandlerArgs<ITestFailed> args)
