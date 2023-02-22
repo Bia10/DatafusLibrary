@@ -44,9 +44,7 @@ public class SpellsDeserializationTest
         }
 
         if (spellData is null || !spellData.Any())
-        {
             throw new InvalidOperationException("Failed to deserialize spell data!");
-        }
 
         foreach (var data in spellData)
         {
@@ -58,12 +56,11 @@ public class SpellsDeserializationTest
                 continue;
             }
 
-            if (spellTypeData is null || !spellTypeData.Any())
-            {
+            if (spellTypeData is null || !spellTypeData.Any()) 
                 continue;
-            }
 
-            var spellType = spellTypeData.Select(spellType => spellType).FirstOrDefault(spellType => spellType.Id.Equals(data.TypeId));
+            var spellType = spellTypeData.Select(spellType => spellType)
+                .FirstOrDefault(spellType => spellType.Id.Equals(data.TypeId));
             if (spellType == null)
             {
                 _output.WriteLine($"Could not find spellType for spellId: {data.Id}");
@@ -76,11 +73,8 @@ public class SpellsDeserializationTest
                 var replace = spellTypeName.Replace("\"", string.Empty).Replace(",", string.Empty);
 
                 if (!string.IsNullOrEmpty(replace) || !replace.Equals(""))
-                {
                     _output.WriteLine($"SpellName: {spellName} SpellTypeName: {spellTypeName}");
-                }
             }
         }
     }
 }
-

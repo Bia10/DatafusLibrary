@@ -26,7 +26,7 @@ public class TestOutputTarget : TargetWithLayoutHeaderAndFooter
         if (string.IsNullOrWhiteSpace(loggerName))
             throw new ArgumentNullException(nameof(loggerName));
 
-        return _map.TryRemove(loggerName, out ITestOutputHelper _);
+        return _map.TryRemove(loggerName, out var _);
     }
 
     protected override void Write(LogEventInfo logEvent)
@@ -34,7 +34,7 @@ public class TestOutputTarget : TargetWithLayoutHeaderAndFooter
         if (string.IsNullOrEmpty(logEvent.LoggerName))
             return;
 
-        if (!_map.TryGetValue(logEvent.LoggerName, out ITestOutputHelper? testOutputHelper))
+        if (!_map.TryGetValue(logEvent.LoggerName, out var testOutputHelper))
             return;
 
         try

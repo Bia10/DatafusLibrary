@@ -29,10 +29,7 @@ public static class EntityDefinitionParser
         classModel.ClassName = entityDefinition.memberName ?? string.Empty;
 
         if (entityDefinition.fields is not null && entityDefinition.fields.Any())
-        {
-            //Console.WriteLine($"getting properties for class: {classModel.Namespace} in package: {classModel.ClassName} ");
             classModel.Properties = ParseProperties(entityDefinition.fields);
-        }
 
         return classModel;
     }
@@ -86,7 +83,7 @@ public static class EntityDefinitionParser
 
         if (string.IsNullOrEmpty(fieldType))
         {
-           // Console.WriteLine($"Unrecognized value: {fieldTypeValue} of type name: {fieldTypeName}");
+            // Console.WriteLine($"Unrecognized value: {fieldTypeValue} of type name: {fieldTypeName}");
         }
 
         return fieldType;
@@ -94,7 +91,7 @@ public static class EntityDefinitionParser
 
     public static string GetVectorizedType(int fieldTypeValue, Field? vectorType)
     {
-        if (string.IsNullOrEmpty(vectorType?.name)) 
+        if (string.IsNullOrEmpty(vectorType?.name))
             throw new ArgumentNullException(nameof(vectorType));
 
         if (vectorType.name.StartsWith("Vector.<Vector.<"))
@@ -106,7 +103,7 @@ public static class EntityDefinitionParser
             if (argumentType.Contains("::"))
                 argumentType = argumentType.Split("::", 2)[1];
 
-            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase)) 
+            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
                 argumentType = "float";
 
             return $"List<List<{argumentType}>>";
@@ -153,8 +150,6 @@ public static class EntityDefinitionParser
 
     public static string GetReferenceName(string fieldTypeName)
     {
-        //Console.WriteLine($"Unrecognized typeValue of type name: {fieldTypeName}");
-
         return fieldTypeName switch
         {
             "bonusCharacteristics" => "MonsterBonusCharacteristics",

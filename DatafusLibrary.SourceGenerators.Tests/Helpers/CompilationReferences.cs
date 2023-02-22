@@ -48,7 +48,7 @@ public static class CompilationReferences
 
     public static IEnumerable<MetadataReference> GetPredefined(bool useRuntime = false)
     {
-        const string refDirectory = 
+        const string refDirectory =
             "C:\\Program Files\\dotnet\\packs\\Microsoft.NETCore.App.Ref\\7.0.3\\ref\\net7.0\\";
 
         var requiredAssemblies = new[]
@@ -66,8 +66,8 @@ public static class CompilationReferences
 
         var reqAssembliesPath = (
             from requiredAssembly in requiredAssemblies
-            from assemblyPath in assemblyPaths 
-            where assemblyPath.Replace(refDirectory, string.Empty).Equals(requiredAssembly, StringComparison.Ordinal) 
+            from assemblyPath in assemblyPaths
+            where assemblyPath.Replace(refDirectory, string.Empty).Equals(requiredAssembly, StringComparison.Ordinal)
             select assemblyPath).ToList();
 
         var metadataReferences = reqAssembliesPath
@@ -78,10 +78,5 @@ public static class CompilationReferences
             throw new InvalidOperationException("No suitable references in compile libraries found!");
 
         return metadataReferences;
-    }
-
-    private static bool IsLibrarySourceGenerator(Library library)
-    {
-        return library.Name.IndexOf("SourceGenerators", StringComparison.Ordinal) > -1;
     }
 }

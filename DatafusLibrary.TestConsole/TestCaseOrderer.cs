@@ -21,17 +21,15 @@ public class TestCaseOrderer : ITestCaseOrderer
         {
             var testClassName = testCase.TestMethod.TestClass.Class.Name;
 
-             if (testClassName.Equals("TemplateGeneratorTest", StringComparison.Ordinal))
-             {
-                 orderedTestCases.Insert(0, testCase);
-             }
-             if (!testClassName.Equals("TemplateGeneratorTest", StringComparison.Ordinal))
-             {
-                 orderedTestCases.Add(testCase);
-             }
+            if (testClassName.Equals("TemplateGeneratorTest", StringComparison.Ordinal))
+                orderedTestCases.Insert(0, testCase);
+            if (!testClassName.Equals("TemplateGeneratorTest", StringComparison.Ordinal))
+                orderedTestCases.Add(testCase);
         }
 
-        var message = new DiagnosticMessage($"Ordered {orderedTestCases.Count} test cases, first test to run is: {orderedTestCases[0].DisplayName}");
+        var message =
+            new DiagnosticMessage(
+                $"Ordered {orderedTestCases.Count} test cases, first test to run is: {orderedTestCases[0].DisplayName}");
 
         _diagnosticMessageSink.OnMessage(message);
 

@@ -70,7 +70,8 @@ public static class Roslyn
     {
         return classSyntax.AttributeLists.Count > 0 && classSyntax.AttributeLists
             .SelectMany(attributeList => attributeList.Attributes
-                .Where(attributeSyntax => (attributeSyntax.Name as IdentifierNameSyntax)?.Identifier.Text == attributeName))
+                .Where(attributeSyntax =>
+                    (attributeSyntax.Name as IdentifierNameSyntax)?.Identifier.Text == attributeName))
             .Any();
     }
 
@@ -170,7 +171,8 @@ public static class Roslyn
         }
     }
 
-    public static List<string> GetNamespaceFromMetadataName(this ITypeSymbol typeSymbol, Compilation compilation, ref HashSet<string> namespaceCollection)
+    public static List<string> GetNamespaceFromMetadataName(this ITypeSymbol typeSymbol, Compilation compilation,
+        ref HashSet<string> namespaceCollection)
     {
         var compUnit = compilation.SyntaxTrees.First().GetCompilationUnitRoot();
         var namespaceDeclarationSyntax = compUnit.Members.OfType<NamespaceDeclarationSyntax>().First();
@@ -180,11 +182,9 @@ public static class Roslyn
         //Console.WriteLine($"className : {className}");
         //Console.WriteLine($"typeSymbol namespace: {typeSymbol.ContainingNamespace} metaName: {typeSymbol.MetadataName} name: {typeSymbol.Name}");
 
-       if (!string.IsNullOrEmpty(typeSymbol.ContainingNamespace.ToString()) &&
-           !typeSymbol.ContainingNamespace.ToString().Equals("<global namespace>"))
-        {
+        if (!string.IsNullOrEmpty(typeSymbol.ContainingNamespace.ToString()) &&
+            !typeSymbol.ContainingNamespace.ToString().Equals("<global namespace>"))
             namespaceCollection.Add(typeSymbol.ContainingNamespace.ToString());
-        }
 
         const string ankamaBase = "com.ankamagames.";
         const string dofusDataBase = "com.ankamagames.dofus.datacenter.";
@@ -215,11 +215,12 @@ public static class Roslyn
                         var typeName = namedTypeArgs.TypeArguments.First().Name;
                         if (typeName.Equals(className, StringComparison.Ordinal))
                         {
-                            Console.WriteLine($"Type references itself! argTypeName: {typeName} className: {className}");
+                            Console.WriteLine(
+                                $"Type references itself! argTypeName: {typeName} className: {className}");
                             break;
                         }
                     }
-                    
+
                     var argTypeName = typeArgs.Name;
                     if (argTypeName.Equals(className, StringComparison.Ordinal))
                     {
@@ -240,6 +241,7 @@ public static class Roslyn
                     if (argTypeName.Equals("PlaylistSound", StringComparison.Ordinal))
                         namespaceCollection.Add(dofusDataBase + "ambientSounds");
                 }
+
                 break;
             }
         }
@@ -272,12 +274,8 @@ public static class Roslyn
             var namespaceOfCollection = typeSymbol.GetNamespaceFromMetadataName(compilation, ref requiredNamespaces);
 
             if (namespaceOfCollection.Any(namespaceName => !string.IsNullOrEmpty(namespaceName)))
-            {
                 foreach (var namespaceName in namespaceOfCollection.Where(requiredNamespaces.Add))
-                {
                     Console.WriteLine($"Adding namespace: {namespaceName}");
-                }
-            }
         }
 
         return requiredNamespaces.ToList();

@@ -14,23 +14,18 @@ public static class Program
     private static Task Main()
     {
         var assemblyLocation = typeof(TemplateGeneratorTest).Assembly.Location;
-
         var testMessageSink = new TestMessageSink();
-
         testMessageSink.Discovery.TestCaseDiscoveryMessageEvent += DiscoveryEventSink_TestCaseDiscoveryMessageEvent;
         testMessageSink.Discovery.DiscoveryCompleteMessageEvent += DiscoveryEventSink_DiscoveryCompleteMessageEvent;
-
         testMessageSink.Diagnostics.DiagnosticMessageEvent += MessagesEventSink_DiagnosticMessageEvent;
         testMessageSink.Diagnostics.ErrorMessageEvent += MessagesEventSink_ErrorMessageEvent;
-
         testMessageSink.Execution.TestAssemblyStartingEvent += ExecutionEvenSink_TestAssemblyStartingEvent;
         testMessageSink.Execution.TestAssemblyFinishedEvent += ExecutionEvenSink_TestAssemblyFinishedEvent;
         testMessageSink.Execution.TestPassedEvent += ExecutionEvenSink_TestPassedEvent;
         testMessageSink.Execution.TestFailedEvent += ExecutionEvenSink_TestFailedEvent;
         testMessageSink.Execution.TestOutputEvent += ExecutionEventSink_TestOutputEvent;
-        
         testMessageSink.Runner.TestExecutionSummaryEvent += ExecutionEventSink_TestSummaryEvent;
-        
+
         var xUnit = new XunitFrontController(
             AppDomainSupport.IfAvailable,
             assemblyLocation,
@@ -91,9 +86,7 @@ public static class Program
             Console.WriteLine($"Execution summary event, time elapsed: {args.Message.ElapsedClockTime}");
 
             foreach (var summaryKvp in args.Message.Summaries)
-            {
                 Console.WriteLine($"Index: {summaryKvp.Key} Summary: {summaryKvp.Value}");
-            }
         }
     }
 
