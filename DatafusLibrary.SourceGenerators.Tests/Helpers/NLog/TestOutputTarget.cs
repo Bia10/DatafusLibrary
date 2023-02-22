@@ -31,7 +31,10 @@ public class TestOutputTarget : TargetWithLayoutHeaderAndFooter
 
     protected override void Write(LogEventInfo logEvent)
     {
-        if (!_map.TryGetValue(logEvent.LoggerName, out ITestOutputHelper testOutputHelper))
+        if (string.IsNullOrEmpty(logEvent.LoggerName))
+            return;
+
+        if (!_map.TryGetValue(logEvent.LoggerName, out ITestOutputHelper? testOutputHelper))
             return;
 
         try
@@ -41,8 +44,6 @@ public class TestOutputTarget : TargetWithLayoutHeaderAndFooter
         }
         catch (Exception ex)
         {
-            // If NLog is set to async, and we try to write to a test 
-            // that has been uninitialized, then it will throw.
             var logger = LogManager.GetCurrentClassLogger();
             logger.Debug("TestOutputTarget.Write - Exception: {0}", ex.Message);
         }
