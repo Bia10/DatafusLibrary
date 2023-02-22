@@ -160,8 +160,11 @@ public static class Program
     {
         lock (ConsoleLock)
         {
+            Console.WriteLine($"Finished running tests in assembly run: {args.Message.TestAssembly.Assembly.Name}");
             Console.WriteLine($"Tests failed: {args.Message.TestsFailed}");
-            Console.WriteLine($"Tests run: {args.Message.TestsRun}");
+            Console.WriteLine($"Tests skipped: {args.Message.TestsFailed}");
+            Console.WriteLine($"Tests ran: {args.Message.TestsRun}");
+            Console.WriteLine($"Total execution time: {args.Message.ExecutionTime} seconds.");
         }
 
         Finished.Set();

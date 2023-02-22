@@ -53,8 +53,6 @@ public static class CompilationReferences
 
         var requiredAssemblies = new[]
         {
-            "netstandard.dll",
-            "mscorlib.dll",
             "System.dll",
             "System.Runtime.dll",
             "System.Collections.dll"
@@ -69,7 +67,7 @@ public static class CompilationReferences
         var reqAssembliesPath = (
             from requiredAssembly in requiredAssemblies
             from assemblyPath in assemblyPaths 
-            where assemblyPath.EndsWith(requiredAssembly, StringComparison.Ordinal) 
+            where assemblyPath.Replace(refDirectory, string.Empty).Equals(requiredAssembly, StringComparison.Ordinal) 
             select assemblyPath).ToList();
 
         var metadataReferences = reqAssembliesPath

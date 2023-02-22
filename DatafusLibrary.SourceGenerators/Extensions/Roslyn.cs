@@ -177,8 +177,8 @@ public static class Roslyn
         var classDeclarationSyntax = namespaceDeclarationSyntax.Members.OfType<ClassDeclarationSyntax>().First();
         var className = classDeclarationSyntax?.GetClassName();
 
-        Console.WriteLine($"className : {className}");
-        Console.WriteLine($"typeSymbol namespace: {typeSymbol.ContainingNamespace} metaName: {typeSymbol.MetadataName} name: {typeSymbol.Name}");
+        //Console.WriteLine($"className : {className}");
+        //Console.WriteLine($"typeSymbol namespace: {typeSymbol.ContainingNamespace} metaName: {typeSymbol.MetadataName} name: {typeSymbol.Name}");
 
        if (!string.IsNullOrEmpty(typeSymbol.ContainingNamespace.ToString()) &&
            !typeSymbol.ContainingNamespace.ToString().Equals("<global namespace>"))
@@ -262,7 +262,7 @@ public static class Roslyn
                 if (nameSpaceName.Equals("System", StringComparison.Ordinal))
                     continue;
 
-                if (symbol.Name.Equals(typeSymbol.Name))
+                if (symbol.Name.Equals(typeSymbol.Name, StringComparison.Ordinal))
                     continue;
 
                 if (requiredNamespaces.Add(nameSpaceName))
