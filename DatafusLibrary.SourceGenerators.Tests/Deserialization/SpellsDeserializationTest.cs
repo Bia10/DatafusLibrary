@@ -2,7 +2,6 @@
 using com.ankamagames.dofus.datacenter.spells;
 using DatafusLibrary.Core.Localization;
 using DatafusLibrary.Core.Parsers;
-using DatafusLibrary.SourceGenerators.Tests.Generation;
 using DatafusLibrary.SourceGenerators.Tests.Helpers.NLog;
 using NLog;
 using NLog.Config;
@@ -15,32 +14,32 @@ public class SpellsDeserializationTest
 {
     private static ITestOutputHelper _output;
     private static ILogger _logger;
-     private static readonly string DesktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-     private readonly string _entitiesBase = Path.GetFullPath(Path.Combine(DesktopPath, @".\Dofus2Botting\data\entities_json\"));
+    private static readonly string DesktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
-     public SpellsDeserializationTest(ITestOutputHelper iTestOutputHelper)
+    private readonly string _entitiesBase =
+        Path.GetFullPath(Path.Combine(DesktopPath, @".\Dofus2Botting\data\entities_json\"));
+
+    public SpellsDeserializationTest(ITestOutputHelper iTestOutputHelper)
     {
         var logFactory = new LogFactory();
         logFactory.ThrowExceptions = true;
         var configuration = new LoggingConfiguration();
         var testOutputTarget = new TestOutputTarget();
 
-        testOutputTarget.Add(iTestOutputHelper, nameof(TemplateGeneratorTest));
-        configuration.AddRuleForAllLevels(testOutputTarget, nameof(TemplateGeneratorTest));
+        testOutputTarget.Add(iTestOutputHelper, nameof(SpellsDeserializationTest));
+        configuration.AddRuleForAllLevels(testOutputTarget, nameof(SpellsDeserializationTest));
         logFactory.Configuration = configuration;
 
-        _logger = logFactory.GetLogger(nameof(TemplateGeneratorTest));
-        _logger.Info("TemplateGenerator Test Init!");
+        _logger = logFactory.GetLogger(nameof(SpellsDeserializationTest));
 
         LoadAllRequiredAssemblies(_entitiesBase);
     }
 
     public static void LoadAllRequiredAssemblies(string assemblyDir)
     {
-      var assemblyFiles = Directory.EnumerateFiles(assemblyDir, "*.dll", SearchOption.AllDirectories);
+        var assemblyFiles = Directory.EnumerateFiles(assemblyDir, "*.dll", SearchOption.AllDirectories);
 
         foreach (var assemblyFile in assemblyFiles)
-        {
             try
             {
                 AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyFile);
@@ -49,7 +48,6 @@ public class SpellsDeserializationTest
             {
                 _logger.Error(ex);
             }
-        }
     }
 
     [Fact]
@@ -80,7 +78,7 @@ public class SpellsDeserializationTest
 
         var groupedById = spellLevelData.GroupBy(spellLevel => spellLevel.SpellId);
         _logger.Info($"SpellLevel groups by spellID: {groupedById.Count()}");
-        
+
         if (spellData is null || !spellData.Any())
             throw new InvalidOperationException("Failed to deserialize spell data!");
 
@@ -94,7 +92,7 @@ public class SpellsDeserializationTest
                 continue;
             }
 
-            if (spellTypeData is null || !spellTypeData.Any()) 
+            if (spellTypeData is null || !spellTypeData.Any())
                 continue;
 
             var spellType = spellTypeData.Select(spellType => spellType)
