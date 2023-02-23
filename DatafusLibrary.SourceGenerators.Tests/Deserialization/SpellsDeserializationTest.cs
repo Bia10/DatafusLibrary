@@ -1,4 +1,5 @@
-﻿using com.ankamagames.dofus.datacenter.spells;
+﻿using System.Runtime.Loader;
+using com.ankamagames.dofus.datacenter.spells;
 using DatafusLibrary.Core.Localization;
 using DatafusLibrary.Core.Parsers;
 using Xunit;
@@ -8,11 +9,31 @@ namespace DatafusLibrary.SourceGenerators.Tests.Deserialization;
 
 public class SpellsDeserializationTest
 {
-    private readonly ITestOutputHelper _output;
+    private static ITestOutputHelper _output;
+     private static readonly string DesktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+     private readonly string _entitiesBase = Path.GetFullPath(Path.Combine(DesktopPath, @".\Dofus2Botting\data\entities_json\"));
 
     public SpellsDeserializationTest(ITestOutputHelper output)
     {
+        LoadAllReaderAssemblies(_entitiesBase);
         _output = output;
+    }
+
+    public static void LoadAllReaderAssemblies(string assemblyDir)
+    {
+      var assemblyFiles = Directory.EnumerateFiles(assemblyDir, "*.dll", SearchOption.AllDirectories);
+
+        foreach (var assemblyFile in assemblyFiles)
+        {
+            try
+            {
+                AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyFile);
+            }
+            catch (Exception ex)
+            {
+                _output.WriteLine(ex.Message);
+            }
+        }
     }
 
     [Fact]
@@ -23,14 +44,11 @@ public class SpellsDeserializationTest
         var enTranslation = new TranslationLookup();
         await enTranslation.LoadTranslationFile("C:\\en.json");
 
-        var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-        var entitiesBase = Path.GetFullPath(Path.Combine(desktopPath, @".\Dofus2Botting\data\entities_json\"));
-
-        var pathToSpellsJson = entitiesBase + "Spells.json";
-        var pathToSpellStatesJson = entitiesBase + "SpellStates.json";
-        var pathToSpellTypesJson = entitiesBase + "SpellTypes.json";
-        var pathToSpellVariantsJson = entitiesBase + "SpellVariants.json";
-        var pathToSpellLevelsJson = entitiesBase + "SpellLevels.json";
+        var pathToSpellsJson = _entitiesBase + "Spells.json";
+        var pathToSpellStatesJson = _entitiesBase + "SpellStates.json";
+        var pathToSpellTypesJson = _entitiesBase + "SpellTypes.json";
+        var pathToSpellVariantsJson = _entitiesBase + "SpellVariants.json";
+        var pathToSpellLevelsJson = _entitiesBase + "SpellLevels.json";
 
         var spellData = await EntityDataParser.GetDataFromJson<List<Spell>>(pathToSpellsJson);
         var spellStateData = await EntityDataParser.GetDataFromJson<List<SpellState>>(pathToSpellStatesJson);

@@ -109,13 +109,25 @@ public class TemplateGeneratorTest : IDisposable
 
         driver.RunGeneratorsAndUpdateCompilation(newCompilation, out var outputCompilation, out var diagnostics);
 
-        var result = outputCompilation.Emit(compilationOutputPath);
+        try
+        {
+            var result = outputCompilation.Emit(compilationOutputPath);
 
-        Debug.Assert(result.Success.Equals(true));
-        Debug.Assert(result.Diagnostics.IsEmpty);
+            Debug.Assert(result.Success.Equals(true));
+            Debug.Assert(result.Diagnostics.IsEmpty);
 
-        if (result.Diagnostics.Any())
-            _logger.Info(string.Join(Environment.NewLine,
-                result.Diagnostics.Select(diagnostic => diagnostic.Location.ToString())));
+            if (result.Diagnostics.Any())
+                _logger.Info(string.Join(Environment.NewLine,
+                    result.Diagnostics.Select(diagnostic => diagnostic.Location.ToString())));
+        }
+        catch (IOException ex)
+        {
+            _logger.Error(ex);
+            throw;
+        }
+        finally
+        {
+            Dispose();
+        }
     }
 }

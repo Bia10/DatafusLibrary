@@ -58,9 +58,10 @@ public static class Program
 
         var testCaseOrderer = new TestCaseOrderer(testMessageSink);
 
-        _testCasesFound = testCaseOrderer.OrderTestCases(_testCasesFound);
 
-        xUnit.RunTests(_testCasesFound, testMessageSink, executionOptions);
+        var orderTestCases = testCaseOrderer.OrderTestCases(_testCasesFound);
+
+        xUnit.RunTests(orderTestCases, testMessageSink, executionOptions);
 
         try
         {
