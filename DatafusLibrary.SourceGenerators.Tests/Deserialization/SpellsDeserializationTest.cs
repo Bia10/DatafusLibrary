@@ -2,6 +2,10 @@
 using com.ankamagames.dofus.datacenter.spells;
 using DatafusLibrary.Core.Localization;
 using DatafusLibrary.Core.Parsers;
+using DatafusLibrary.SourceGenerators.Tests.Generation;
+using DatafusLibrary.SourceGenerators.Tests.Helpers.NLog;
+using NLog;
+using NLog.Config;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -10,16 +14,28 @@ namespace DatafusLibrary.SourceGenerators.Tests.Deserialization;
 public class SpellsDeserializationTest
 {
     private static ITestOutputHelper _output;
+    private static ILogger _logger;
      private static readonly string DesktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
      private readonly string _entitiesBase = Path.GetFullPath(Path.Combine(DesktopPath, @".\Dofus2Botting\data\entities_json\"));
 
-    public SpellsDeserializationTest(ITestOutputHelper output)
+     public SpellsDeserializationTest(ITestOutputHelper iTestOutputHelper)
     {
-        LoadAllReaderAssemblies(_entitiesBase);
-        _output = output;
+        var logFactory = new LogFactory();
+        logFactory.ThrowExceptions = true;
+        var configuration = new LoggingConfiguration();
+        var testOutputTarget = new TestOutputTarget();
+
+        testOutputTarget.Add(iTestOutputHelper, nameof(TemplateGeneratorTest));
+        configuration.AddRuleForAllLevels(testOutputTarget, nameof(TemplateGeneratorTest));
+        logFactory.Configuration = configuration;
+
+        _logger = logFactory.GetLogger(nameof(TemplateGeneratorTest));
+        _logger.Info("TemplateGenerator Test Init!");
+
+        LoadAllRequiredAssemblies(_entitiesBase);
     }
 
-    public static void LoadAllReaderAssemblies(string assemblyDir)
+    public static void LoadAllRequiredAssemblies(string assemblyDir)
     {
       var assemblyFiles = Directory.EnumerateFiles(assemblyDir, "*.dll", SearchOption.AllDirectories);
 
@@ -31,7 +47,7 @@ public class SpellsDeserializationTest
             }
             catch (Exception ex)
             {
-                _output.WriteLine(ex.Message);
+                _logger.Error(ex);
             }
         }
     }
@@ -39,7 +55,7 @@ public class SpellsDeserializationTest
     [Fact]
     public async Task DeserializeSpells()
     {
-        _output.WriteLine(string.Join(Environment.NewLine, "Spells deserialization test!"));
+        _logger.Info(string.Join(Environment.NewLine, $"Spells deserialization started at: {DateTime.Now}"));
 
         var enTranslation = new TranslationLookup();
         await enTranslation.LoadTranslationFile("C:\\en.json");
@@ -51,16 +67,20 @@ public class SpellsDeserializationTest
         var pathToSpellLevelsJson = _entitiesBase + "SpellLevels.json";
 
         var spellData = await EntityDataParser.GetDataFromJson<List<Spell>>(pathToSpellsJson);
+        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellData.Count} spellData!"));
         var spellStateData = await EntityDataParser.GetDataFromJson<List<SpellState>>(pathToSpellStatesJson);
+        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellStateData.Count} spellStateData!"));
         var spellTypeData = await EntityDataParser.GetDataFromJson<List<SpellType>>(pathToSpellTypesJson);
+        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellTypeData.Count} spellTypeData!"));
         var spellVariantData = await EntityDataParser.GetDataFromJson<List<SpellVariant>>(pathToSpellVariantsJson);
+        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellVariantData.Count} spellVariantData!"));
         var spellLevelData = await EntityDataParser.GetDataFromJson<List<SpellLevel>>(pathToSpellLevelsJson);
+        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellLevelData.Count} spellLevelData!"));
+        _logger.Info(string.Join(Environment.NewLine, $"Deserialization finished at: {DateTime.Now}"));
 
-        if (spellLevelData is not null)
-        {
-            var groupedById = spellLevelData.GroupBy(spellLevel => spellLevel.SpellId);
-        }
-
+        var groupedById = spellLevelData.GroupBy(spellLevel => spellLevel.SpellId);
+        _logger.Info($"SpellLevel groups by spellID: {groupedById.Count()}");
+        
         if (spellData is null || !spellData.Any())
             throw new InvalidOperationException("Failed to deserialize spell data!");
 
@@ -70,7 +90,7 @@ public class SpellsDeserializationTest
 
             if (string.IsNullOrEmpty(spellName))
             {
-                _output.WriteLine($"Could not find en name for spellId: {data.Id}");
+                _logger.Info($"Could not find en name for spellId: {data.Id}");
                 continue;
             }
 
@@ -81,7 +101,7 @@ public class SpellsDeserializationTest
                 .FirstOrDefault(spellType => spellType.Id.Equals(data.TypeId));
             if (spellType == null)
             {
-                _output.WriteLine($"Could not find spellType for spellId: {data.Id}");
+                _logger.Info($"Could not find spellType for spellId: {data.Id}");
                 continue;
             }
 
@@ -91,7 +111,7 @@ public class SpellsDeserializationTest
                 var replace = spellTypeName.Replace("\"", string.Empty).Replace(",", string.Empty);
 
                 if (!string.IsNullOrEmpty(replace) || !replace.Equals(""))
-                    _output.WriteLine($"SpellName: {spellName} SpellTypeName: {spellTypeName}");
+                    _logger.Info($"SpellName: {spellName} SpellTypeName: {spellTypeName}");
             }
         }
     }
