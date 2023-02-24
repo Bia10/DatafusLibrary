@@ -12,14 +12,13 @@ namespace DatafusLibrary.SourceGenerators.Tests.Deserialization;
 
 public class SpellsDeserializationTest
 {
-    private static ITestOutputHelper _output;
     private static ILogger _logger;
     private static readonly string DesktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
     private readonly string _entitiesBase =
         Path.GetFullPath(Path.Combine(DesktopPath, @".\Dofus2Botting\data\entities_json\"));
 
-    public SpellsDeserializationTest(ITestOutputHelper iTestOutputHelper)
+    public SpellsDeserializationTest(ITestOutputHelper? iTestOutputHelper)
     {
         var logFactory = new LogFactory();
         logFactory.ThrowExceptions = true;

@@ -14,26 +14,30 @@ using Xunit.Abstractions;
 
 namespace DatafusLibrary.SourceGenerators.Tests.Generation;
 
-public class TemplateGeneratorTest : IDisposable
+public class GeneratorTestFixture : IDisposable
 {
-    private readonly GenerationContext _generationContext;
-    private readonly ILogger _logger;
 
-    public TemplateGeneratorTest(ITestOutputHelper iTestOutputHelper)
+    public readonly ILogger Logger;
+    public GenerationContext? GenerationContext;
+    public ITestOutputHelper? TestOutput;
+
+    public GeneratorTestFixture()
     {
         var logFactory = new LogFactory();
         logFactory.ThrowExceptions = true;
         var configuration = new LoggingConfiguration();
         var testOutputTarget = new TestOutputTarget();
 
-        testOutputTarget.Add(iTestOutputHelper, nameof(TemplateGeneratorTest));
+        if (TestOutput is not null)
+            testOutputTarget.Add(TestOutput, nameof(TemplateGeneratorTest));
+
         configuration.AddRuleForAllLevels(testOutputTarget, nameof(TemplateGeneratorTest));
         logFactory.Configuration = configuration;
 
-        _logger = logFactory.GetLogger(nameof(TemplateGeneratorTest));
-        _logger.Info("TemplateGenerator Test Init!");
+        Logger = logFactory.GetLogger(nameof(TemplateGeneratorTest));
+        Logger.Info("GeneratorTestFixture Init!");
 
-        _generationContext = new GenerationContext(
+        GenerationContext = new GenerationContext(
             successSyntaxTrees: new List<SyntaxTree>(),
             failedSyntaxTrees: new List<SyntaxTree>(),
             generationResults: new List<GeneratorResult>(),
@@ -49,32 +53,44 @@ public class TemplateGeneratorTest : IDisposable
 
     public void Dispose()
     {
+        Logger.Factory.Dispose();
+        GenerationContext = null;
         GC.SuppressFinalize(this);
-        _logger.Factory.Dispose();
+    }
+}
+public class TemplateGeneratorTest : IClassFixture<GeneratorTestFixture>
+{
+    private readonly GeneratorTestFixture _fixture;
+
+    public TemplateGeneratorTest(ITestOutputHelper? iTestOutputHelper, GeneratorTestFixture fixture)
+    {
+        _fixture = fixture;
+        _fixture.TestOutput = iTestOutputHelper;
     }
 
     [Fact]
     public async Task GenerateFromTemplateTest()
     {
-        var allBasicClasses = await EntityParser.GetAllBasicClassesFromDir(_generationContext.JsonDataDirectoryPath);
+        if (_fixture.GenerationContext is null)
+            throw new ArgumentNullException(nameof(_fixture.GenerationContext));
 
-        var outputDir = GenerationContext.CreateOutputDir(_generationContext.JsonDataDirectoryPath,
-            _generationContext.GenerationOutputPath);
-
-        var templateString = TemplateLoader.LoadTemplate(_generationContext.InputTemplateName, typeof(TemplateLoader));
+        var allBasicClasses =
+            await EntityParser.GetAllBasicClassesFromDir(_fixture.GenerationContext.JsonDataDirectoryPath);
+        var outputDir = GenerationContext.CreateOutputDir(_fixture.GenerationContext.JsonDataDirectoryPath,
+            _fixture.GenerationContext.GenerationOutputPath);
+        var templateString =
+            TemplateLoader.LoadTemplate(_fixture.GenerationContext.InputTemplateName, typeof(TemplateLoader));
 
         GeneratorResult? generationResult = null;
 
         foreach (var basicClass in allBasicClasses)
         {
-            if (basicClass.ClassName.Equals("LuaFormula"))
+            if (basicClass.ClassName.Equals("LuaFormula", StringComparison.Ordinal))
                 continue;
 
             var generatedSource = TemplateGenerator.Execute(templateString, basicClass);
-
             var generatedSourceFile = new GeneratedSourceFile(generatedSource,
-                basicClass.ClassName + _generationContext.GeneratedSrcFileSuffix);
-
+                basicClass.ClassName + _fixture.GenerationContext.GeneratedSrcFileSuffix);
             var srcFilePath = Path.Combine(outputDir, generatedSourceFile.FileName);
 
             await generatedSourceFile.WriteToFile(srcFilePath);
@@ -84,22 +100,22 @@ public class TemplateGeneratorTest : IDisposable
             Debug.Assert(generationResult.Compilation.SyntaxTrees.Count().Equals(2));
 
             if (generationResult.GetDiagnostics().Any())
-                _logger.Info(generationResult.GetDiagnostics());
+                _fixture.Logger.Info(generationResult.GetDiagnostics());
 
-            _generationContext.GenerationResults.Add(generationResult);
-            _generationContext.SuccessSyntaxTrees.Add(generationResult.Compilation.SyntaxTrees.Last());
+            _fixture.GenerationContext.GenerationResults.Add(generationResult);
+            _fixture.GenerationContext.SuccessSyntaxTrees.Add(generationResult.Compilation.SyntaxTrees.Last());
         }
 
-        _logger.Info(_generationContext.GenerationResults.Count);
-        _logger.Info(_generationContext.SuccessSyntaxTrees.Count);
+        _fixture.Logger.Info(_fixture.GenerationContext.GenerationResults.Count);
+        _fixture.Logger.Info(_fixture.GenerationContext.SuccessSyntaxTrees.Count);
 
-        var syntaxTrees = _generationContext.SuccessSyntaxTrees.DistinctBy(file => file.FilePath).ToList();
+        var syntaxTrees = _fixture.GenerationContext.SuccessSyntaxTrees.DistinctBy(file => file.FilePath).ToList();
         var references = generationResult?.Compilation.References;
 
-        var compilationOutputPath = Path.Combine(outputDir + "\\" + _generationContext.OutputAssemblyName);
+        var compilationOutputPath = Path.Combine(outputDir + "\\" + _fixture.GenerationContext.OutputAssemblyName);
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-        var newCompilation =
-            CSharpCompilation.Create(_generationContext.OutputAssemblyName, syntaxTrees, references, options);
+        var newCompilation = CSharpCompilation.Create(_fixture.GenerationContext.OutputAssemblyName, syntaxTrees,
+            references, options);
 
         var arrayOfGenerators = ImmutableArray<BasicClassGenerator>.Empty;
         var arrayOfAdditionalTexts = ImmutableArray<AdditionalText>.Empty;
@@ -107,7 +123,7 @@ public class TemplateGeneratorTest : IDisposable
 
         var driver = CSharpGeneratorDriver.Create(arrayOfGenerators, arrayOfAdditionalTexts, parseOptions);
 
-        driver.RunGeneratorsAndUpdateCompilation(newCompilation, out var outputCompilation, out var diagnostics);
+        driver.RunGeneratorsAndUpdateCompilation(newCompilation, out var outputCompilation, out _);
 
         try
         {
@@ -117,17 +133,17 @@ public class TemplateGeneratorTest : IDisposable
             Debug.Assert(result.Diagnostics.IsEmpty);
 
             if (result.Diagnostics.Any())
-                _logger.Info(string.Join(Environment.NewLine,
+                _fixture.Logger.Info(string.Join(Environment.NewLine,
                     result.Diagnostics.Select(diagnostic => diagnostic.Location.ToString())));
         }
         catch (IOException ex)
         {
-            _logger.Error(ex);
+            _fixture.Logger.Error(ex);
             throw;
         }
         finally
         {
-            Dispose();
+            _fixture.Dispose();
         }
     }
 }
