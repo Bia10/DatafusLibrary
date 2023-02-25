@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatafusLibrary.SourceGenera
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatafusLibrary.Launcher", "DatafusLibrary.Launcher\DatafusLibrary.Launcher.csproj", "{C3BB0499-9219-40C2-BD63-76ACA1A6E28F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatafusLibrary.TestRunner", "DatafusLibrary.TestRunner\DatafusLibrary.TestRunner.csproj", "{A283904A-57A6-4531-86A9-57C07A086E7D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatafusLibrary.TestRunner", "DatafusLibrary.TestRunner\DatafusLibrary.TestRunner.csproj", "{A283904A-57A6-4531-86A9-57C07A086E7D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

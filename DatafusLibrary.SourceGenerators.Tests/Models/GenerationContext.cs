@@ -38,8 +38,18 @@ public class GenerationContext
     {
         try
         {
-            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            return desktopPath + "\\Dofus2Botting\\data\\entities_json";
+            //"os": "Linux",
+            //"arch": "X64",
+            //"name": "GitHub Actions 2",
+            //"tool_cache": "/opt/hostedtoolcache",
+            //"temp": "/home/runner/work/_temp"
+
+            var tempPath = Path.GetTempPath();
+
+            if (OperatingSystem.IsLinux()) 
+                return "/home/runner/work/_temp/datafusRelease/data/entities_json";
+
+            return tempPath + "\\datafusRelease\\data\\entities_json";
         }
         catch (Exception ex)
         {

@@ -5,6 +5,7 @@ using Cake.Frosting;
 namespace DatafusLibrary.Launcher.Tasks;
 
 [TaskName("Clean")]
+[IsDependentOn(typeof(GetAssetsTask))]
 public sealed class CleanTask : AsyncFrostingTask<LaunchContext>
 {
     public override Task RunAsync(LaunchContext context)

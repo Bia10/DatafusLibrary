@@ -41,7 +41,15 @@ public class SpellsDeserializationTest
         _logger.Info(string.Join(Environment.NewLine, $"Spells deserialization started at: {DateTime.Now}"));
 
         var enTranslation = new TranslationLookup();
-        await enTranslation.LoadTranslationFile("C:\\en.json");
+
+        var tempPath = Path.GetTempPath();
+        var pathToTranslationFile = tempPath + "datafusRelease\\data\\translations_json\\i18n_en.json";
+
+        if (OperatingSystem.IsLinux())
+            pathToTranslationFile = tempPath + "datafusRelease\\data\\translations_json\\i18n_en.json"
+                .Replace('\\', '/');
+
+        await enTranslation.LoadTranslationFile(pathToTranslationFile);
 
         var pathToSpellsJson = _entitiesBase + "Spells.json";
         var pathToSpellStatesJson = _entitiesBase + "SpellStates.json";

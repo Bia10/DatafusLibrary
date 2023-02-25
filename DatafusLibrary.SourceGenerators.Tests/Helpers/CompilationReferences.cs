@@ -48,8 +48,11 @@ public static class CompilationReferences
 
     public static IEnumerable<MetadataReference> GetPredefined(bool useRuntime = false)
     {
-        const string refDirectory =
-            "C:\\Program Files\\dotnet\\packs\\Microsoft.NETCore.App.Ref\\7.0.3\\ref\\net7.0\\";
+        var refDirectory = "C:\\Program Files\\dotnet\\packs\\Microsoft.NETCore.App.Ref\\7.0.3\\ref\\net7.0\\";
+
+        if (OperatingSystem.IsLinux())
+            refDirectory = "/usr/share/dotnet" + "\\packs\\Microsoft.NETCore.App.Ref\\7.0.3\\ref\\net7.0\\"
+                .Replace('\\', '/');
 
         var requiredAssemblies = new[]
         {

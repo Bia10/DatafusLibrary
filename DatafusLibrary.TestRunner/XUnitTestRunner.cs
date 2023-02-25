@@ -41,6 +41,14 @@ public class XUnitTestRunner : IDisposable
             _testMessageSink);
     }
 
+    public void Dispose()
+    {
+        DiscoveryContext.UnsubscribeFromEvents(ref _testMessageSink);
+        DiagnosticContext.UnsubscribeFromEvents(ref _testMessageSink);
+        ExecutionContext.UnsubscribeFromEvents(ref _testMessageSink);
+        GC.SuppressFinalize(this);
+    }
+
     public void DiscoverTests()
     {
         var discoveryOptions = TestFrameworkOptions.ForDiscovery(_assemblyConfiguration);
@@ -60,13 +68,5 @@ public class XUnitTestRunner : IDisposable
         var executionOptions = TestFrameworkOptions.ForExecution(_assemblyConfiguration);
 
         _frontController.RunTests(testsToRun, _testMessageSink, executionOptions);
-    }
-
-    public void Dispose()
-    {
-        DiscoveryContext.UnsubscribeFromEvents(ref _testMessageSink);
-        DiagnosticContext.UnsubscribeFromEvents(ref _testMessageSink);
-        ExecutionContext.UnsubscribeFromEvents(ref _testMessageSink);
-        GC.SuppressFinalize(this);
     }
 }
