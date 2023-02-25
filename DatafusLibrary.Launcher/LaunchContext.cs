@@ -12,7 +12,8 @@ public sealed class LaunchContext : FrostingContext
         var solutionDir = Directory.GetParent(curDir)?.Parent?.Parent;
         var solutionFilePath = solutionDir + "\\DatafusLibrary.sln";
 
-        if (OperatingSystem.IsLinux()) solutionFilePath = solutionFilePath.Replace('\\', '/');
+        if (OperatingSystem.IsLinux()) 
+            solutionFilePath = solutionFilePath.Replace('\\', '/');
 
         SolutionParserResult = context.ParseSolution(solutionFilePath);
 
@@ -31,7 +32,8 @@ public sealed class LaunchContext : FrostingContext
             testsProject.Path.Segments.Last(),
             "\\bin\\Debug\\net7.0\\");
 
-        if (OperatingSystem.IsLinux()) testProjectOutputPath = testProjectOutputPath.Replace('\\', '/');
+        if (OperatingSystem.IsLinux()) 
+            testProjectOutputPath = testProjectOutputPath.Replace('\\', '/');
 
         TestProjectOutputPath = testProjectOutputPath;
 
@@ -39,7 +41,8 @@ public sealed class LaunchContext : FrostingContext
             testsProject.Path.Segments.Last(),
             "\\bin\\Debug\\net7.0\\DatafusLibrary.SourceGenerators.Tests.dll");
 
-        if (OperatingSystem.IsLinux()) testProjectAssemblyPath = testProjectAssemblyPath.Replace('\\', '/');
+        if (OperatingSystem.IsLinux()) 
+            testProjectAssemblyPath = testProjectAssemblyPath.Replace('\\', '/');
 
         TestProjectAssemblyPath = testProjectAssemblyPath;
     }

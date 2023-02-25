@@ -24,13 +24,13 @@ jobs:
          dotnet-quality: 'preview'
          
     - name: Restore packages
-      run: dotnet restore
+      run: dotnet restore DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj
 
     - name: Build launcher
-      run: dotnet build DatafusLibrary.Launcher.csproj --configuration Release --no-restore --verbosity normal
+      run: dotnet build DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj --configuration Release --no-restore --verbosity normal
     
     - name: Run launcher
-      run: DatafusLibrary.Launcher.exe
+      run: DatafusLibrary.Launcher/bin/Release/net7.0/DatafusLibrary.Launcher.exe
 
   Publish:
      runs-on: ubuntu-latest

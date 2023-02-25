@@ -215,8 +215,7 @@ public static class Roslyn
                         var typeName = namedTypeArgs.TypeArguments.First().Name;
                         if (typeName.Equals(className, StringComparison.Ordinal))
                         {
-                            Console.WriteLine(
-                                $"Type references itself! argTypeName: {typeName} className: {className}");
+                            //Console.WriteLine($"Type references itself! argTypeName: {typeName} className: {className}");
                             break;
                         }
                     }
@@ -224,7 +223,7 @@ public static class Roslyn
                     var argTypeName = typeArgs.Name;
                     if (argTypeName.Equals(className, StringComparison.Ordinal))
                     {
-                        Console.WriteLine($"Type references itself! argTypeName: {argTypeName} className: {className}");
+                        //Console.WriteLine($"Type references itself! argTypeName: {argTypeName} className: {className}");
                         break;
                     }
 

@@ -41,7 +41,7 @@ public class TranslationLookup
 
         if (key < 1)
         {
-            Console.WriteLine($"Cannot find translation for key: {key}");
+            //Console.WriteLine($"Cannot find translation for key: {key}");
             return result;
         }
 
@@ -49,9 +49,9 @@ public class TranslationLookup
         {
             result = _internalDictionary[key];
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine($"Cannot find translation for key: {key}", e);
+            Console.WriteLine($"Cannot find translation for key: {key}", ex);
             return result;
         }
 

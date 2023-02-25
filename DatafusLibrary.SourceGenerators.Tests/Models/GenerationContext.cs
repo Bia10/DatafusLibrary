@@ -38,16 +38,10 @@ public class GenerationContext
     {
         try
         {
-            //"os": "Linux",
-            //"arch": "X64",
-            //"name": "GitHub Actions 2",
-            //"tool_cache": "/opt/hostedtoolcache",
-            //"temp": "/home/runner/work/_temp"
-
-            var tempPath = Path.GetTempPath();
-
             if (OperatingSystem.IsLinux())
                 return "/home/runner/work/_temp/datafusRelease/data/entities_json";
+
+            var tempPath = Path.GetTempPath();
 
             return tempPath + "\\datafusRelease\\data\\entities_json";
         }
