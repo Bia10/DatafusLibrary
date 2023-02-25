@@ -6,7 +6,7 @@ using Cake.Frosting;
 namespace DatafusLibrary.Launcher.Tasks;
 
 [TaskName("Build")]
-[IsDependentOn(typeof(RestorePackagesTask))]
+[IsDependentOn(typeof(RestoreTask))]
 public sealed class BuildTask : AsyncFrostingTask<LaunchContext>
 {
     public override Task RunAsync(LaunchContext context)

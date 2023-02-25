@@ -17,13 +17,11 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
         var testsProject = context.SolutionParserResult.Projects.FirstOrDefault(project =>
             project.Name.Equals("DatafusLibrary.SourceGenerators.Tests", StringComparison.Ordinal));
 
-        if (testsProject is null)
-        {
+        if (testsProject is null) 
             throw new NullReferenceException(nameof(testsProject));
-        }
 
         var pathToOutput = testsProject.Path.FullPath.Replace(
-            testsProject.Path.Segments.Last(), 
+            testsProject.Path.Segments.Last(),
             "\\bin\\Debug\\net7.0\\");
         var pathToTestsAssembly = testsProject.Path.FullPath.Replace(
             testsProject.Path.Segments.Last(),
@@ -42,12 +40,13 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
                 // nop
             }
 
-            if (xUnitTestRunner.DiscoveryContext.DiscoveredTestCases is not null && xUnitTestRunner.DiscoveryContext.DiscoveredTestCases.Any())
-                context.Information($"Found tests: {xUnitTestRunner.DiscoveryContext.DiscoveredTestCases.Count}");
+            if (xUnitTestRunner.DiscoveryContext.FoundTests is not null &&
+                xUnitTestRunner.DiscoveryContext.FoundTests.Any())
+                context.Information($"Found tests: {xUnitTestRunner.DiscoveryContext.FoundTests.Count}");
 
-            if (xUnitTestRunner.DiscoveryContext.DiscoveredTestCases is not null)
+            if (xUnitTestRunner.DiscoveryContext.FoundTests is not null)
             {
-                var orderedTests =  xUnitTestRunner.OrderTests(xUnitTestRunner.DiscoveryContext.DiscoveredTestCases);
+                var orderedTests = xUnitTestRunner.OrderTests(xUnitTestRunner.DiscoveryContext.FoundTests);
 
                 context.Information($"Running test: {orderedTests.First().DisplayName}");
 
@@ -57,8 +56,11 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
                 {
                     // nop
                 }
-                context.Information($"Failed test: { xUnitTestRunner.ExecutionContext.TestsFailed.Count}");
-                context.Information($"Succes test: { xUnitTestRunner.ExecutionContext.TestsPassed.Count}");
+
+                if (xUnitTestRunner.ExecutionContext.TestsFailed is not null)
+                    context.Information($"Failed test: {xUnitTestRunner.ExecutionContext.TestsFailed.Count}");
+                if (xUnitTestRunner.ExecutionContext.TestsPassed is not null)
+                    context.Information($"Succes test: {xUnitTestRunner.ExecutionContext.TestsPassed.Count}");
             }
         }
 
@@ -76,7 +78,7 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
             {
                 AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyFile);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // _logger.Error(ex);
             }

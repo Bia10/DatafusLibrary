@@ -5,12 +5,12 @@ namespace DatafusLibrary.TestRunner;
 
 public class TestDiscoveryContext
 {
-    public List<ITestCase>? DiscoveredTestCases;
+    public List<ITestCase>? FoundTests;
     public bool IsFinished;
 
     public TestDiscoveryContext()
     {
-        DiscoveredTestCases = new List<ITestCase>();
+        FoundTests = new List<ITestCase>();
     }
 
     public void SubscribeToEvents(ref TestMessageSink testMessageSink)
@@ -38,6 +38,6 @@ public class TestDiscoveryContext
         if (args.Message is null)
             return;
 
-        DiscoveredTestCases?.Add(args.Message.TestCase);
+        FoundTests?.Add(args.Message.TestCase);
     }
 }

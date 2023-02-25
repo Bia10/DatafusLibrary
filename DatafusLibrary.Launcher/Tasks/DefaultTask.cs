@@ -2,7 +2,8 @@
 
 namespace DatafusLibrary.Launcher.Tasks;
 
+[TaskName("Default")]
 [IsDependentOn(typeof(TestTask))]
-public sealed class Default : FrostingTask
+public sealed class DefaultTask : AsyncFrostingTask
 {
 }

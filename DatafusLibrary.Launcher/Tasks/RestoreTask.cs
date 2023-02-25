@@ -6,7 +6,7 @@ namespace DatafusLibrary.Launcher.Tasks;
 
 [TaskName("Restore")]
 [IsDependentOn(typeof(CleanTask))]
-public sealed class RestorePackagesTask : AsyncFrostingTask<LaunchContext>
+public sealed class RestoreTask : AsyncFrostingTask<LaunchContext>
 {
     public override Task RunAsync(LaunchContext context)
     {

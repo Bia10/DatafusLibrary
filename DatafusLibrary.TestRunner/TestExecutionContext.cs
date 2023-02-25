@@ -5,10 +5,10 @@ namespace DatafusLibrary.TestRunner;
 
 public class TestExecutionContext
 {
+    public bool IsFinished;
     public List<ITestOutput>? TestOutputs;
     public List<ITestFailed>? TestsFailed;
     public List<ITestPassed>? TestsPassed;
-    public bool IsFinished;
 
     public TestExecutionContext()
     {
@@ -22,7 +22,7 @@ public class TestExecutionContext
         testMessageSink.Execution.TestOutputEvent += TestOutputEvent;
         testMessageSink.Execution.TestPassedEvent += TestPassedEvent;
         testMessageSink.Execution.TestFailedEvent += TestFailedEvent;
-        testMessageSink.Execution.TestFinishedEvent += TestFinishedEvent;
+        testMessageSink.Execution.TestAssemblyFinishedEvent += TestAssemblyFinished;
     }
 
     public void UnsubscribeFromEvents(ref TestMessageSink testMessageSink)
@@ -30,7 +30,7 @@ public class TestExecutionContext
         testMessageSink.Execution.TestOutputEvent -= TestOutputEvent;
         testMessageSink.Execution.TestPassedEvent -= TestPassedEvent;
         testMessageSink.Execution.TestFailedEvent -= TestFailedEvent;
-        testMessageSink.Execution.TestFinishedEvent -= TestFinishedEvent;
+        testMessageSink.Execution.TestAssemblyFinishedEvent -= TestAssemblyFinished;
     }
 
     private void TestFailedEvent(MessageHandlerArgs<ITestFailed> args)
@@ -57,7 +57,7 @@ public class TestExecutionContext
         TestOutputs?.Add(args.Message);
     }
 
-    private void TestFinishedEvent(MessageHandlerArgs<ITestFinished> args)
+    private void TestAssemblyFinished(MessageHandlerArgs<ITestAssemblyFinished> args)
     {
         if (args.Message is null)
             return;

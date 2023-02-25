@@ -1,5 +1,4 @@
-﻿using System.Runtime.Loader;
-using com.ankamagames.dofus.datacenter.spells;
+﻿using com.ankamagames.dofus.datacenter.spells;
 using DatafusLibrary.Core.Localization;
 using DatafusLibrary.Core.Parsers;
 using DatafusLibrary.SourceGenerators.Tests.Helpers.NLog;
@@ -12,7 +11,7 @@ namespace DatafusLibrary.SourceGenerators.Tests.Deserialization;
 
 public class SpellsDeserializationTest
 {
-    private static ILogger _logger;
+    private static ILogger? _logger;
     private static readonly string DesktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
     private readonly string _entitiesBase =
@@ -30,28 +29,15 @@ public class SpellsDeserializationTest
         logFactory.Configuration = configuration;
 
         _logger = logFactory.GetLogger(nameof(SpellsDeserializationTest));
-
-        LoadAllRequiredAssemblies(_entitiesBase);
     }
 
-    public static void LoadAllRequiredAssemblies(string assemblyDir)
-    {
-        var assemblyFiles = Directory.EnumerateFiles(assemblyDir, "*.dll", SearchOption.AllDirectories);
-
-        foreach (var assemblyFile in assemblyFiles)
-            try
-            {
-                AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyFile);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            }
-    }
 
     [Fact]
     public async Task DeserializeSpells()
     {
+        if (_logger is null)
+            throw new NullReferenceException(nameof(_logger));
+
         _logger.Info(string.Join(Environment.NewLine, $"Spells deserialization started at: {DateTime.Now}"));
 
         var enTranslation = new TranslationLookup();
@@ -64,19 +50,25 @@ public class SpellsDeserializationTest
         var pathToSpellLevelsJson = _entitiesBase + "SpellLevels.json";
 
         var spellData = await EntityDataParser.GetDataFromJson<List<Spell>>(pathToSpellsJson);
-        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellData.Count} spellData!"));
+        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellData?.Count} spellData!"));
+
         var spellStateData = await EntityDataParser.GetDataFromJson<List<SpellState>>(pathToSpellStatesJson);
-        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellStateData.Count} spellStateData!"));
+        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellStateData?.Count} spellStateData!"));
+
         var spellTypeData = await EntityDataParser.GetDataFromJson<List<SpellType>>(pathToSpellTypesJson);
-        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellTypeData.Count} spellTypeData!"));
+        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellTypeData?.Count} spellTypeData!"));
+
         var spellVariantData = await EntityDataParser.GetDataFromJson<List<SpellVariant>>(pathToSpellVariantsJson);
-        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellVariantData.Count} spellVariantData!"));
+        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellVariantData?.Count} spellVariantData!"));
+
         var spellLevelData = await EntityDataParser.GetDataFromJson<List<SpellLevel>>(pathToSpellLevelsJson);
-        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellLevelData.Count} spellLevelData!"));
+        _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellLevelData?.Count} spellLevelData!"));
+
+
         _logger.Info(string.Join(Environment.NewLine, $"Deserialization finished at: {DateTime.Now}"));
 
-        var groupedById = spellLevelData.GroupBy(spellLevel => spellLevel.SpellId);
-        _logger.Info($"SpellLevel groups by spellID: {groupedById.Count()}");
+        var groupedById = spellLevelData?.GroupBy(spellLevel => spellLevel.SpellId);
+        _logger.Info($"SpellLevel groups by spellID: {groupedById?.Count()}");
 
         if (spellData is null || !spellData.Any())
             throw new InvalidOperationException("Failed to deserialize spell data!");
