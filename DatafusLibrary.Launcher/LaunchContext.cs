@@ -1,4 +1,6 @@
-﻿using Cake.Common.Solution;
+﻿using Cake.Common.Diagnostics;
+using Cake.Common.IO;
+using Cake.Common.Solution;
 using Cake.Core;
 using Cake.Frosting;
 
@@ -8,12 +10,17 @@ public sealed class LaunchContext : FrostingContext
 {
     public LaunchContext(ICakeContext context) : base(context)
     {
+        context.Information("Building launch context ...");
+
         var curDir = Directory.GetCurrentDirectory();
         var solutionDir = Directory.GetParent(curDir)?.Parent?.Parent;
         var solutionFilePath = solutionDir + "\\DatafusLibrary.sln";
 
         if (OperatingSystem.IsLinux())
-            solutionFilePath = solutionFilePath.Replace('\\', '/');
+            solutionFilePath = curDir + "/DatafusLibrary.sln";;
+
+        if (!context.FileExists(solutionFilePath))
+            context.Error($"File at path: {solutionFilePath} not found!");
 
         SolutionParserResult = context.ParseSolution(solutionFilePath);
 
@@ -28,12 +35,16 @@ public sealed class LaunchContext : FrostingContext
         if (testsProject is null)
             throw new NullReferenceException(nameof(testsProject));
 
+        context.Information($"Test project path: {testsProject.Path.FullPath}");
+
         var testProjectOutputPath = testsProject.Path.FullPath.Replace(
             testsProject.Path.Segments.Last(),
             "\\bin\\Debug\\net7.0\\");
 
         if (OperatingSystem.IsLinux())
             testProjectOutputPath = testProjectOutputPath.Replace('\\', '/');
+
+        context.Information($"testProjectOutputPath: {testProjectOutputPath}");
 
         TestProjectOutputPath = testProjectOutputPath;
 
