@@ -27,17 +27,16 @@ public class SpellsDeserializationTest
         _logger = logFactory.GetLogger(nameof(SpellsDeserializationTest));
     }
 
-
     [Fact]
     public async Task DeserializeSpells()
     {
         var tempPath = Path.GetTempPath();
-        var entitiesBase = tempPath + "\\datafusRelease\\data\\entities_json";
+        var entitiesBase = tempPath + "\\datafusRelease\\data\\entities_json\\";
         var pathToTranslationFile = tempPath + "\\datafusRelease\\data\\translations_json\\i18n_en.json";
 
         if (OperatingSystem.IsLinux())
         {
-            entitiesBase = "/home/runner/work/_temp/datafusRelease/data/entities_json";
+            entitiesBase = "/home/runner/work/_temp/datafusRelease/data/entities_json/";
             pathToTranslationFile = "/home/runner/work/_temp/datafusRelease/data/translations_json/i18n_en.json";
         }
 

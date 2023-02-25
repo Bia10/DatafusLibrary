@@ -37,7 +37,6 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
             {
                 if (xUnitTestRunner.DiagnosticContext.Errors.Any())
                     context.Error(xUnitTestRunner.DiagnosticContext.GetErrors());
-
                 if (xUnitTestRunner.DiagnosticContext.Diagnostics.Any())
                     context.Warning(xUnitTestRunner.DiagnosticContext.GetDiagnostics());
             }
@@ -57,7 +56,6 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
                 {
                     if (xUnitTestRunner.DiagnosticContext.Errors.Any())
                         context.Error(xUnitTestRunner.DiagnosticContext.GetErrors());
-
                     if (xUnitTestRunner.DiagnosticContext.Diagnostics.Any())
                         context.Warning(xUnitTestRunner.DiagnosticContext.GetDiagnostics());
                 }

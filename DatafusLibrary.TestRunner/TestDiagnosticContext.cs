@@ -44,11 +44,37 @@ public class TestDiagnosticContext
 
     public string GetErrors()
     {
-        return string.Join(Environment.NewLine, Errors.Select(error => error.Messages));
+        try
+        {
+            return string.Join(Environment.NewLine, Errors
+                .Select(error => error.Messages));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+        finally
+        {
+            Errors.Clear();
+        }
     }
 
     public string GetDiagnostics()
     {
-        return string.Join(Environment.NewLine, Diagnostics.Select(diagnostic => diagnostic.Message));
+        try
+        {
+            return string.Join(Environment.NewLine, Diagnostics
+                .Select(diagnostic => diagnostic.Message));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+        finally
+        {
+            Diagnostics.Clear();
+        }
     }
 }

@@ -27,9 +27,8 @@ public class TestCaseOrderer : ITestCaseOrderer
                 orderedTestCases.Add(testCase);
         }
 
-        var message =
-            new DiagnosticMessage(
-                $"Ordered {orderedTestCases.Count} test cases, first test to run is: {orderedTestCases[0].DisplayName}");
+        var message = new DiagnosticMessage($"Ordered {orderedTestCases.Count} test cases," +
+                                            $" first to run is: {orderedTestCases.First().TestMethod.Method.Name}");
 
         _diagnosticMessageSink.OnMessage(message);
 

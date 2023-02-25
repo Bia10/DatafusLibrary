@@ -1,5 +1,5 @@
 ﻿using System.IO.Compression;
-using System.Text;
+using Cake.Common.IO;
 using Cake.Frosting;
 using Octokit;
 
@@ -19,21 +19,20 @@ public sealed class GetAssetsTask : AsyncFrostingTask<LaunchContext>
         var reqParams = new Dictionary<string, string>();
         var response = await client.Connection.Get<object>(assetUri, reqParams, "application/octet-stream");
 
-        var bodyStr = response.HttpResponse.Body.ToString();
+        var tempPath = Path.GetTempPath();
+        var destinationPath = tempPath + "datafusRelease";
 
-        if (!string.IsNullOrEmpty(bodyStr))
-        {
-            var bytes = Encoding.ASCII.GetBytes(bodyStr);
+        if (OperatingSystem.IsLinux())
+            destinationPath = "/home/runner/work/_temp/datafusRelease";
 
-            await File.WriteAllBytesAsync("datafusRelease.zip", bytes);
+        context.EnsureDirectoryDoesNotExist(destinationPath);
 
-            var tempPath = Path.GetTempPath();
-            var destinationPath = tempPath + "\\datafusRelease";
+        if (context.FileExists(destinationPath + ".zip"))
+            context.DeleteFile(destinationPath + ".zip");
 
-            if (OperatingSystem.IsLinux())
-                destinationPath = "/home/runner/work/_temp/datafusRelease";
+        if (response.HttpResponse.Body is byte[] bodyBytes)
+            await File.WriteAllBytesAsync($"{destinationPath}.zip", bodyBytes);
 
-            ZipFile.ExtractToDirectory("datafusRelease.zip", destinationPath);
-        }
+        ZipFile.ExtractToDirectory($"{destinationPath}.zip", destinationPath);
     }
 }
