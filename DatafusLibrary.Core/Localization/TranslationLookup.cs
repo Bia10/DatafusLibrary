@@ -40,10 +40,7 @@ public class TranslationLookup
         string? result = null;
 
         if (key < 1)
-        {
-            //Console.WriteLine($"Cannot find translation for key: {key}");
             return result;
-        }
 
         try
         {

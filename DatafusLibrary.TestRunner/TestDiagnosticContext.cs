@@ -11,8 +11,8 @@ public class TestDiagnosticContext
         Errors = new List<IErrorMessage>();
     }
 
-    public List<IErrorMessage> Errors { get; set; }
-    public List<IDiagnosticMessage> Diagnostics { get; set; }
+    public List<IErrorMessage> Errors { get; }
+    public List<IDiagnosticMessage> Diagnostics { get; }
 
     public void SubscribeToEvents(ref TestMessageSink testMessageSink)
     {

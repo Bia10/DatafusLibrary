@@ -214,18 +214,12 @@ public static class Roslyn
                     {
                         var typeName = namedTypeArgs.TypeArguments.First().Name;
                         if (typeName.Equals(className, StringComparison.Ordinal))
-                        {
-                            //Console.WriteLine($"Type references itself! argTypeName: {typeName} className: {className}");
                             break;
-                        }
                     }
 
                     var argTypeName = typeArgs.Name;
                     if (argTypeName.Equals(className, StringComparison.Ordinal))
-                    {
-                        //Console.WriteLine($"Type references itself! argTypeName: {argTypeName} className: {className}");
                         break;
-                    }
 
                     if (argTypeName.Equals("EffectInstance", StringComparison.Ordinal))
                         namespaceCollection.Add(dofusDataBase + "effects");
