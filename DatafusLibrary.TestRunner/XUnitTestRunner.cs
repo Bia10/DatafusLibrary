@@ -3,14 +3,14 @@ using Xunit.Abstractions;
 
 namespace DatafusLibrary.TestRunner;
 
-public class XUnitTestRunner
+public class XUnitTestRunner : IDisposable
 {
     private readonly TestAssemblyConfiguration _assemblyConfiguration;
     private readonly XunitFrontController _frontController;
-    private readonly TestMessageSink _testMessageSink;
     public readonly TestDiagnosticContext DiagnosticContext;
     public readonly TestDiscoveryContext DiscoveryContext;
     public readonly TestExecutionContext ExecutionContext;
+    private TestMessageSink _testMessageSink;
 
     public XUnitTestRunner(string testAssemblyPath)
     {
@@ -60,5 +60,13 @@ public class XUnitTestRunner
         var executionOptions = TestFrameworkOptions.ForExecution(_assemblyConfiguration);
 
         _frontController.RunTests(testsToRun, _testMessageSink, executionOptions);
+    }
+
+    public void Dispose()
+    {
+        DiscoveryContext.UnsubscribeFromEvents(ref _testMessageSink);
+        DiagnosticContext.UnsubscribeFromEvents(ref _testMessageSink);
+        ExecutionContext.UnsubscribeFromEvents(ref _testMessageSink);
+        GC.SuppressFinalize(this);
     }
 }
