@@ -35,7 +35,11 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
 
             while (!xUnitTestRunner.DiscoveryContext.IsFinished)
             {
-                // nop
+                if (xUnitTestRunner.DiagnosticContext.Errors.Any())
+                    context.Error(xUnitTestRunner.DiagnosticContext.GetErrors());
+
+                if (xUnitTestRunner.DiagnosticContext.Diagnostics.Any())
+                    context.Warning(xUnitTestRunner.DiagnosticContext.GetDiagnostics());
             }
 
             if (xUnitTestRunner.DiscoveryContext.FoundTests is not null &&
@@ -51,7 +55,11 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
 
                 while (!xUnitTestRunner.ExecutionContext.IsFinished)
                 {
-                    // nop
+                    if (xUnitTestRunner.DiagnosticContext.Errors.Any())
+                        context.Error(xUnitTestRunner.DiagnosticContext.GetErrors());
+
+                    if (xUnitTestRunner.DiagnosticContext.Diagnostics.Any())
+                        context.Warning(xUnitTestRunner.DiagnosticContext.GetDiagnostics());
                 }
 
                 if (xUnitTestRunner.ExecutionContext.TestsPassed is not null)

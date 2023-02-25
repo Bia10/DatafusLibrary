@@ -26,11 +26,14 @@ jobs:
     - name: Restore packages
       run: dotnet restore DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj
 
-    - name: Build launcher
-      run: dotnet build DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj --configuration Release --no-restore --verbosity normal
+    #- name: Build launcher
+      #run: dotnet build DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj --configuration Release --no-restore --verbosity normal
     
+    - name: Publish launcher
+      run: dotnet publish DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj -c Release -f net7.0 -r linux-x64 
+
     - name: Run launcher
-      run: DatafusLibrary.Launcher/bin/Release/net7.0/DatafusLibrary.Launcher.exe
+      run: DatafusLibrary.Launcher/bin/Release/net7.0/linux-x64/publish/DatafusLibrary.Launcher.exe
 
   Publish:
      runs-on: ubuntu-latest

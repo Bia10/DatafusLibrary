@@ -41,4 +41,14 @@ public class TestDiagnosticContext
 
         Diagnostics.Add(args.Message);
     }
+
+    public string GetErrors()
+    {
+        return string.Join(Environment.NewLine, Errors.Select(error => error.Messages));
+    }
+
+    public string GetDiagnostics()
+    {
+        return string.Join(Environment.NewLine, Diagnostics.Select(diagnostic => diagnostic.Message));
+    }
 }
