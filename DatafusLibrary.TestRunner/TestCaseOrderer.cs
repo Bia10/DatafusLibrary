@@ -1,7 +1,7 @@
 ﻿using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace DatafusLibrary.TestConsole;
+namespace DatafusLibrary.TestRunner;
 
 public class TestCaseOrderer : ITestCaseOrderer
 {

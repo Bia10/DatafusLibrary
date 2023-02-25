@@ -16,7 +16,6 @@ namespace DatafusLibrary.SourceGenerators.Tests.Generation;
 
 public class GeneratorTestFixture : IDisposable
 {
-
     public readonly ILogger Logger;
     public GenerationContext? GenerationContext;
     public ITestOutputHelper? TestOutput;
@@ -58,6 +57,7 @@ public class GeneratorTestFixture : IDisposable
         GC.SuppressFinalize(this);
     }
 }
+
 public class TemplateGeneratorTest : IClassFixture<GeneratorTestFixture>
 {
     private readonly GeneratorTestFixture _fixture;
