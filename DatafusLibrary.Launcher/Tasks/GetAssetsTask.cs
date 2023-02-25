@@ -28,11 +28,12 @@ public sealed class GetAssetsTask : AsyncFrostingTask<LaunchContext>
             await File.WriteAllBytesAsync("datafusRelease.zip", bytes);
 
             var tempPath = Path.GetTempPath();
+            var destinationPath = tempPath + "\\datafusRelease";
 
-            if (string.IsNullOrEmpty(tempPath) && OperatingSystem.IsLinux())
-                tempPath = "/home/runner/work/_temp/";
+            if (OperatingSystem.IsLinux())
+                destinationPath = "/home/runner/work/_temp/datafusRelease";
 
-            ZipFile.ExtractToDirectory("datafusRelease.zip", tempPath + "datafusRelease");
+            ZipFile.ExtractToDirectory("datafusRelease.zip", destinationPath);
         }
     }
 }

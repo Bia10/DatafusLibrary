@@ -46,7 +46,7 @@ public class GenerationContext
 
             var tempPath = Path.GetTempPath();
 
-            if (OperatingSystem.IsLinux()) 
+            if (OperatingSystem.IsLinux())
                 return "/home/runner/work/_temp/datafusRelease/data/entities_json";
 
             return tempPath + "\\datafusRelease\\data\\entities_json";

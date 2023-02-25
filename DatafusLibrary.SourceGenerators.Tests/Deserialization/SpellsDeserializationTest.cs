@@ -12,10 +12,6 @@ namespace DatafusLibrary.SourceGenerators.Tests.Deserialization;
 public class SpellsDeserializationTest
 {
     private static ILogger? _logger;
-    private static readonly string DesktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-
-    private readonly string _entitiesBase =
-        Path.GetFullPath(Path.Combine(DesktopPath, @".\Dofus2Botting\data\entities_json\"));
 
     public SpellsDeserializationTest(ITestOutputHelper? iTestOutputHelper)
     {
@@ -35,6 +31,22 @@ public class SpellsDeserializationTest
     [Fact]
     public async Task DeserializeSpells()
     {
+        var tempPath = Path.GetTempPath();
+        var entitiesBase = tempPath + "\\datafusRelease\\data\\entities_json";
+        var pathToTranslationFile = tempPath + "\\datafusRelease\\data\\translations_json\\i18n_en.json";
+
+        if (OperatingSystem.IsLinux())
+        {
+            entitiesBase = "/home/runner/work/_temp/datafusRelease/data/entities_json";
+            pathToTranslationFile = "/home/runner/work/_temp/datafusRelease/data/translations_json/i18n_en.json";
+        }
+
+        var pathToSpellsJson = entitiesBase + "Spells.json";
+        var pathToSpellStatesJson = entitiesBase + "SpellStates.json";
+        var pathToSpellTypesJson = entitiesBase + "SpellTypes.json";
+        var pathToSpellVariantsJson = entitiesBase + "SpellVariants.json";
+        var pathToSpellLevelsJson = entitiesBase + "SpellLevels.json";
+
         if (_logger is null)
             throw new NullReferenceException(nameof(_logger));
 
@@ -42,20 +54,7 @@ public class SpellsDeserializationTest
 
         var enTranslation = new TranslationLookup();
 
-        var tempPath = Path.GetTempPath();
-        var pathToTranslationFile = tempPath + "datafusRelease\\data\\translations_json\\i18n_en.json";
-
-        if (OperatingSystem.IsLinux())
-            pathToTranslationFile = tempPath + "datafusRelease\\data\\translations_json\\i18n_en.json"
-                .Replace('\\', '/');
-
         await enTranslation.LoadTranslationFile(pathToTranslationFile);
-
-        var pathToSpellsJson = _entitiesBase + "Spells.json";
-        var pathToSpellStatesJson = _entitiesBase + "SpellStates.json";
-        var pathToSpellTypesJson = _entitiesBase + "SpellTypes.json";
-        var pathToSpellVariantsJson = _entitiesBase + "SpellVariants.json";
-        var pathToSpellLevelsJson = _entitiesBase + "SpellLevels.json";
 
         var spellData = await EntityDataParser.GetDataFromJson<List<Spell>>(pathToSpellsJson);
         _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellData?.Count} spellData!"));
@@ -71,7 +70,6 @@ public class SpellsDeserializationTest
 
         var spellLevelData = await EntityDataParser.GetDataFromJson<List<SpellLevel>>(pathToSpellLevelsJson);
         _logger.Info(string.Join(Environment.NewLine, $"Deserialized {spellLevelData?.Count} spellLevelData!"));
-
 
         _logger.Info(string.Join(Environment.NewLine, $"Deserialization finished at: {DateTime.Now}"));
 
