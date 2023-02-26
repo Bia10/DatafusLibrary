@@ -48,4 +48,4 @@ jobs:
          prerelease: false
          title: ${{ env.VERSION }}
          files: |
-          ./release.zip
+          DatafusLibrary/DatafusLibrary.SourceGenerators.Tests/bin/Debug/net7.0_release.zip

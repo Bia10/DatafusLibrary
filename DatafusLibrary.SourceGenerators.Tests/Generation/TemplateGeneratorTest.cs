@@ -138,19 +138,21 @@ public class TemplateGeneratorTest : IClassFixture<GeneratorTestFixture>
 
         try
         {
-            var compilationOutputPath = Path.Combine(
-                outputDir + "\\" + _fixture.GenerationContext.OutputAssemblyName);
+            var outputDirPath = outputDir + (OperatingSystem.IsLinux() ? "/" : "\\");
+            var compiledAssemblyOutputPath =
+                Path.Combine(outputDirPath + _fixture.GenerationContext.OutputAssemblyName);
 
-            _fixture.Logger.Info($"Outputing assembly to path: {compilationOutputPath}");
+            _fixture.Logger.Info($"Outputing assembly to path: {compiledAssemblyOutputPath}");
 
-            var result = outputCompilation.Emit(compilationOutputPath);
-
-            Debug.Assert(result.Success.Equals(true));
-            Debug.Assert(result.Diagnostics.IsEmpty);
+            var result = outputCompilation.Emit(compiledAssemblyOutputPath);
 
             if (result.Diagnostics.Any())
                 _fixture.Logger.Info(string.Join(Environment.NewLine,
                     result.Diagnostics.Select(diagnostic => diagnostic.Location.ToString())));
+
+            Debug.Assert(result.Success.Equals(true));
+            Debug.Assert(result.Diagnostics.IsEmpty.Equals(true));
+            Debug.Assert(File.Exists(compiledAssemblyOutputPath).Equals(true));
         }
         catch (IOException ex)
         {

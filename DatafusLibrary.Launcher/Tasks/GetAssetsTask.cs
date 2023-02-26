@@ -18,6 +18,8 @@ public sealed class GetAssetsTask : AsyncFrostingTask<LaunchContext>
         var releases = await client.Repository.Release.GetAll("bot4dofus", "Datafus");
         var latestAsset = await client.Repository.Release.GetAllAssets("bot4dofus", "Datafus", releases[0].Id);
 
+        context.Information($"Downloading datafus version: {releases[0].Name} published at: {releases[0].PublishedAt}");
+
         var assetUri = new Uri(latestAsset[0].Url);
         var reqParams = new Dictionary<string, string>();
         var response = await client.Connection.Get<object>(assetUri, reqParams, "application/octet-stream");
