@@ -22,20 +22,21 @@ public sealed class GetAssetsTask : AsyncFrostingTask<LaunchContext>
         var reqParams = new Dictionary<string, string>();
         var response = await client.Connection.Get<object>(assetUri, reqParams, "application/octet-stream");
 
-        var destinationPath = context.LocalPathProvider.TempPath.FullPath + "datafusRelease";
+        var downloadPath = context.LocalPathProvider.DatafusReleaseDownloadPath.FullPath;
 
-        if (OperatingSystem.IsLinux())
-            destinationPath = context.LocalPathProvider.TempPath.FullPath + "datafusRelease";
+        context.EnsureDirectoryDoesNotExist(downloadPath);
 
-        context.EnsureDirectoryDoesNotExist(destinationPath);
+        if (context.FileExists(downloadPath + ".zip"))
+            context.DeleteFile(downloadPath + ".zip");
 
-        if (context.FileExists(destinationPath + ".zip"))
-            context.DeleteFile(destinationPath + ".zip");
+        context.Information($"Saving assets to path: {downloadPath + ".zip"}");
 
         if (response.HttpResponse.Body is byte[] bodyBytes)
-            await File.WriteAllBytesAsync($"{destinationPath}.zip", bodyBytes);
+            await File.WriteAllBytesAsync($"{downloadPath}.zip", bodyBytes);
 
-        ZipFile.ExtractToDirectory($"{destinationPath}.zip", destinationPath);
+        context.Information($"Extracting assets to path: {downloadPath}");
+
+        ZipFile.ExtractToDirectory($"{downloadPath}.zip", downloadPath);
 
         context.Information("GetAssets finished...");
     }

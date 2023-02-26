@@ -26,10 +26,4 @@
 		<ProjectReference Include="..\DatafusLibrary.SourceGenerators\DatafusLibrary.SourceGenerators.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Reference Include="com.ankamagames.dofus.datacenter.dll">
-			<HintPath>..\..\..\..\Desktop\Dofus2Botting\data\entities_json\com.ankamagames.dofus.datacenter.world\com.ankamagames.dofus.datacenter.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-
 </Project>
