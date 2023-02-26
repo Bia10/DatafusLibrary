@@ -5,10 +5,10 @@ namespace DatafusLibrary.TestRunner;
 
 public class TestExecutionContext
 {
+    public readonly List<ITestOutput> TestOutputs;
+    public readonly List<ITestFailed> TestsFailed;
+    public readonly List<ITestPassed> TestsPassed;
     public bool IsFinished;
-    public List<ITestOutput>? TestOutputs;
-    public List<ITestFailed>? TestsFailed;
-    public List<ITestPassed>? TestsPassed;
 
     public TestExecutionContext()
     {
@@ -38,7 +38,7 @@ public class TestExecutionContext
         if (args.Message is null)
             return;
 
-        TestsFailed?.Add(args.Message);
+        TestsFailed.Add(args.Message);
     }
 
     private void TestPassedEvent(MessageHandlerArgs<ITestPassed> args)
@@ -46,7 +46,7 @@ public class TestExecutionContext
         if (args.Message is null)
             return;
 
-        TestsPassed?.Add(args.Message);
+        TestsPassed.Add(args.Message);
     }
 
     private void TestOutputEvent(MessageHandlerArgs<ITestOutput> args)
@@ -54,7 +54,7 @@ public class TestExecutionContext
         if (args.Message is null)
             return;
 
-        TestOutputs?.Add(args.Message);
+        TestOutputs.Add(args.Message);
     }
 
     private void TestAssemblyFinished(MessageHandlerArgs<ITestAssemblyFinished> args)
@@ -63,5 +63,23 @@ public class TestExecutionContext
             return;
 
         IsFinished = true;
+    }
+
+    public string GetTestOutput()
+    {
+        try
+        {
+            return string.Join(Environment.NewLine, TestOutputs
+                .Select(testOutput => testOutput.Output));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+        finally
+        {
+            TestOutputs.Clear();
+        }
     }
 }

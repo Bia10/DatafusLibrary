@@ -17,35 +17,11 @@ namespace DatafusLibrary.SourceGenerators.Tests.Generation;
 
 public class GeneratorTestFixture : IDisposable
 {
-    public readonly ILogger Logger;
-    public GenerationContext? GenerationContext;
-    public ITestOutputHelper? TestOutput;
+    public GenerationContext GenerationContext;
+    public ILogger? Logger;
 
     public GeneratorTestFixture()
     {
-        var logFactory = new LogFactory
-        {
-            ThrowExceptions = true,
-            ThrowConfigExceptions = true,
-            KeepVariablesOnReload = false,
-            AutoShutdown = true,
-            Configuration = null,
-            GlobalThreshold = null,
-            DefaultCultureInfo = CultureInfo.InvariantCulture
-        };
-
-        var configuration = new LoggingConfiguration();
-        var testOutputTarget = new TestOutputTarget();
-
-        if (TestOutput is not null)
-            testOutputTarget.Add(TestOutput, nameof(TemplateGeneratorTest));
-
-        configuration.AddRuleForAllLevels(testOutputTarget, nameof(TemplateGeneratorTest));
-        logFactory.Configuration = configuration;
-
-        Logger = logFactory.GetLogger(nameof(TemplateGeneratorTest));
-        Logger.Info("GeneratorTestFixture Init!");
-
         GenerationContext = new GenerationContext(
             successSyntaxTrees: new List<SyntaxTree>(),
             failedSyntaxTrees: new List<SyntaxTree>(),
@@ -62,9 +38,33 @@ public class GeneratorTestFixture : IDisposable
 
     public void Dispose()
     {
+        if (Logger is null) return;
         Logger.Factory.Dispose();
-        GenerationContext = null;
         GC.SuppressFinalize(this);
+    }
+
+    public static ILogger MakeLogger(ITestOutputHelper iTestOutputHelper)
+    {
+        var logFactory = new LogFactory
+        {
+            ThrowExceptions = true,
+            ThrowConfigExceptions = true,
+            KeepVariablesOnReload = false,
+            AutoShutdown = true,
+            Configuration = null,
+            GlobalThreshold = null,
+            DefaultCultureInfo = CultureInfo.InvariantCulture
+        };
+
+        var configuration = new LoggingConfiguration();
+        var testOutputTarget = new TestOutputTarget();
+
+        testOutputTarget.Add(iTestOutputHelper, nameof(TemplateGeneratorTest));
+
+        configuration.AddRuleForAllLevels(testOutputTarget, nameof(TemplateGeneratorTest));
+        logFactory.Configuration = configuration;
+
+        return logFactory.GetLogger(nameof(TemplateGeneratorTest));
     }
 }
 
@@ -72,10 +72,10 @@ public class TemplateGeneratorTest : IClassFixture<GeneratorTestFixture>
 {
     private readonly GeneratorTestFixture _fixture;
 
-    public TemplateGeneratorTest(ITestOutputHelper? iTestOutputHelper, GeneratorTestFixture fixture)
+    public TemplateGeneratorTest(ITestOutputHelper iTestOutputHelper)
     {
-        _fixture = fixture;
-        _fixture.TestOutput = iTestOutputHelper;
+        _fixture = new GeneratorTestFixture();
+        _fixture.Logger = GeneratorTestFixture.MakeLogger(iTestOutputHelper);
     }
 
     [Fact]
@@ -83,6 +83,8 @@ public class TemplateGeneratorTest : IClassFixture<GeneratorTestFixture>
     {
         if (_fixture.GenerationContext is null)
             throw new ArgumentNullException(nameof(_fixture.GenerationContext));
+        if (_fixture.Logger is null)
+            throw new ArgumentNullException(nameof(_fixture.Logger));
 
         var allBasicClasses =
             await EntityParser.GetAllBasicClassesFromDir(_fixture.GenerationContext.JsonDataDirectoryPath);
@@ -116,13 +118,12 @@ public class TemplateGeneratorTest : IClassFixture<GeneratorTestFixture>
             _fixture.GenerationContext.SuccessSyntaxTrees.Add(generationResult.Compilation.SyntaxTrees.Last());
         }
 
-        _fixture.Logger.Info(_fixture.GenerationContext.GenerationResults.Count);
-        _fixture.Logger.Info(_fixture.GenerationContext.SuccessSyntaxTrees.Count);
+        _fixture.Logger.Info("GenerationResults count: " + _fixture.GenerationContext.GenerationResults.Count);
+        _fixture.Logger.Info("SuccessSyntaxTrees count:  " + _fixture.GenerationContext.SuccessSyntaxTrees.Count);
 
         var syntaxTrees = _fixture.GenerationContext.SuccessSyntaxTrees.DistinctBy(file => file.FilePath).ToList();
         var references = generationResult?.Compilation.References;
 
-        var compilationOutputPath = Path.Combine(outputDir + "\\" + _fixture.GenerationContext.OutputAssemblyName);
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
         var newCompilation = CSharpCompilation.Create(_fixture.GenerationContext.OutputAssemblyName, syntaxTrees,
             references, options);
@@ -137,6 +138,11 @@ public class TemplateGeneratorTest : IClassFixture<GeneratorTestFixture>
 
         try
         {
+            var compilationOutputPath = Path.Combine(
+                outputDir + "\\" + _fixture.GenerationContext.OutputAssemblyName);
+
+            _fixture.Logger.Info($"Outputing assembly to path: {compilationOutputPath}");
+
             var result = outputCompilation.Emit(compilationOutputPath);
 
             Debug.Assert(result.Success.Equals(true));

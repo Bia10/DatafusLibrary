@@ -13,12 +13,12 @@ public class PathProvider : FrostingContext
     private static string? _currentDirectory;
     private static ICakeContext? _context;
     private static FilePath? _testProjectPath;
+    public readonly FilePath DatafusReleaseDownloadPath;
 
     public readonly FilePath SolutionPath;
-    public readonly FilePath DatafusReleaseDownloadPath;
     public FilePath? TestProjectAssemblyPath;
     public FilePath? TestProjectOutputPath;
-    
+
     public PathProvider(ICakeContext? context) : base(context)
     {
         _context = context;
@@ -27,6 +27,7 @@ public class PathProvider : FrostingContext
         SolutionPath = ToSolution();
         DatafusReleaseDownloadPath = ToTemp() + "datafusRelease";
     }
+
     private static string ToSolution()
     {
         var solutionDir = Directory.GetParent(_currentDirectory!)?.Parent?.Parent;

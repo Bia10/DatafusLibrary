@@ -8,9 +8,9 @@ namespace DatafusLibrary.SourceGenerators.Tests.Helpers.NLog;
 [Target("TestOutput")]
 public class TestOutputTarget : TargetWithLayoutHeaderAndFooter
 {
-    private readonly ConcurrentDictionary<string, ITestOutputHelper?> _map = new();
+    private readonly ConcurrentDictionary<string, ITestOutputHelper> _map = new();
 
-    public void Add(ITestOutputHelper? testOutputHelper, string loggerName)
+    public void Add(ITestOutputHelper testOutputHelper, string loggerName)
     {
         if (testOutputHelper is null)
             throw new ArgumentNullException(nameof(testOutputHelper));
@@ -39,9 +39,6 @@ public class TestOutputTarget : TargetWithLayoutHeaderAndFooter
 
         if (!_map.TryGetValue(logEvent.LoggerName, out var testOutputHelper))
             return;
-
-        if (testOutputHelper is null)
-            throw new ArgumentNullException(nameof(testOutputHelper));
 
         try
         {

@@ -68,15 +68,15 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
                         context.Error(xUnitTestRunner.DiagnosticContext.GetErrors());
                     if (xUnitTestRunner.DiagnosticContext.Diagnostics.Any())
                         context.Warning(xUnitTestRunner.DiagnosticContext.GetDiagnostics());
+                    if (xUnitTestRunner.ExecutionContext.TestOutputs.Any())
+                        context.Information(xUnitTestRunner.ExecutionContext.GetTestOutput());
                 }
 
-                if (xUnitTestRunner.ExecutionContext.TestsPassed is not null)
-                    foreach (var passedTest in xUnitTestRunner.ExecutionContext.TestsPassed)
-                        context.Information(
-                            $"Passing test: {passedTest.TestMethod.Method.Name} execution time: {passedTest.ExecutionTime} ");
+                foreach (var passedTest in xUnitTestRunner.ExecutionContext.TestsPassed)
+                    context.Information(
+                        $"Passing test: {passedTest.TestMethod.Method.Name} execution time: {passedTest.ExecutionTime}");
 
-                if (xUnitTestRunner.ExecutionContext.TestsFailed is not null)
-                    context.Information($"Failed test: {xUnitTestRunner.ExecutionContext.TestsFailed.Count}");
+                context.Information($"Failed test: {xUnitTestRunner.ExecutionContext.TestsFailed.Count}");
             }
 
             xUnitTestRunner.Dispose();
