@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using DatafusLibrary.Core.Parsers;
 using DatafusLibrary.SourceGenerators.Generators;
 using DatafusLibrary.SourceGenerators.Templates;
@@ -22,8 +23,17 @@ public class GeneratorTestFixture : IDisposable
 
     public GeneratorTestFixture()
     {
-        var logFactory = new LogFactory();
-        logFactory.ThrowExceptions = true;
+        var logFactory = new LogFactory
+        {
+            ThrowExceptions = true,
+            ThrowConfigExceptions = true,
+            KeepVariablesOnReload = false,
+            AutoShutdown = true,
+            Configuration = null,
+            GlobalThreshold = null,
+            DefaultCultureInfo = CultureInfo.InvariantCulture
+        };
+
         var configuration = new LoggingConfiguration();
         var testOutputTarget = new TestOutputTarget();
 

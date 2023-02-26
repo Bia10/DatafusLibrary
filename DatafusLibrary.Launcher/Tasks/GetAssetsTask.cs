@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using Cake.Common.Diagnostics;
 using Cake.Common.IO;
 using Cake.Frosting;
 using Octokit;
@@ -10,6 +11,8 @@ public sealed class GetAssetsTask : AsyncFrostingTask<LaunchContext>
 {
     public override async Task RunAsync(LaunchContext context)
     {
+        context.Information("GetAssets started...");
+
         var client = new GitHubClient(new ProductHeaderValue("DatafusLibrary"));
 
         var releases = await client.Repository.Release.GetAll("bot4dofus", "Datafus");
@@ -33,5 +36,7 @@ public sealed class GetAssetsTask : AsyncFrostingTask<LaunchContext>
             await File.WriteAllBytesAsync($"{destinationPath}.zip", bodyBytes);
 
         ZipFile.ExtractToDirectory($"{destinationPath}.zip", destinationPath);
+
+        context.Information("GetAssets finished...");
     }
 }

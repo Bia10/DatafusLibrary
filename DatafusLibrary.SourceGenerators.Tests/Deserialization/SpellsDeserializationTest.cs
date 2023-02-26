@@ -1,4 +1,5 @@
-﻿using com.ankamagames.dofus.datacenter.spells;
+﻿using System.Globalization;
+using com.ankamagames.dofus.datacenter.spells;
 using DatafusLibrary.Core.Localization;
 using DatafusLibrary.Core.Parsers;
 using DatafusLibrary.SourceGenerators.Tests.Helpers.NLog;
@@ -15,8 +16,17 @@ public class SpellsDeserializationTest
 
     public SpellsDeserializationTest(ITestOutputHelper? iTestOutputHelper)
     {
-        var logFactory = new LogFactory();
-        logFactory.ThrowExceptions = true;
+        var logFactory = new LogFactory
+        {
+            ThrowExceptions = true,
+            ThrowConfigExceptions = true,
+            KeepVariablesOnReload = false,
+            AutoShutdown = true,
+            Configuration = null,
+            GlobalThreshold = null,
+            DefaultCultureInfo = CultureInfo.InvariantCulture
+        };
+
         var configuration = new LoggingConfiguration();
         var testOutputTarget = new TestOutputTarget();
 
