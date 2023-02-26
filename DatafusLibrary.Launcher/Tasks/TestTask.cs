@@ -14,10 +14,20 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
     {
         context.Information("Test started...");
 
-        if (context.FileExists(context.TestProjectAssemblyPath))
+        var testProjectAssemblyPath = context.LocalPathProvider.TestProjectAssemblyPath;
+
+        if (testProjectAssemblyPath is null)
+            throw new NullReferenceException(nameof(testProjectAssemblyPath));
+
+        if (context.FileExists(testProjectAssemblyPath))
         {
+            var testProjectOutputPath = context.LocalPathProvider.TestProjectOutputPath?.FullPath;
+
+            if (string.IsNullOrEmpty(testProjectOutputPath))
+                throw new NullReferenceException(nameof(testProjectOutputPath));
+
             var assemblyFiles =
-                Directory.EnumerateFiles(context.TestProjectOutputPath, "*.dll", SearchOption.AllDirectories);
+                Directory.EnumerateFiles(testProjectOutputPath, "*.dll", SearchOption.AllDirectories);
 
             foreach (var assemblyFile in assemblyFiles)
                 try
@@ -29,7 +39,7 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
                     context.Error(ex);
                 }
 
-            var xUnitTestRunner = new XUnitTestRunner(context.TestProjectAssemblyPath);
+            var xUnitTestRunner = new XUnitTestRunner(testProjectAssemblyPath.FullPath);
 
             xUnitTestRunner.DiscoverTests();
 

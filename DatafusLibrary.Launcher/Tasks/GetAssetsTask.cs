@@ -13,17 +13,16 @@ public sealed class GetAssetsTask : AsyncFrostingTask<LaunchContext>
         var client = new GitHubClient(new ProductHeaderValue("DatafusLibrary"));
 
         var releases = await client.Repository.Release.GetAll("bot4dofus", "Datafus");
-        var latestAsset = await client.Repository.Release.GetAllAssets("bot4dofus", "Datafus", releases.First().Id);
+        var latestAsset = await client.Repository.Release.GetAllAssets("bot4dofus", "Datafus", releases[0].Id);
 
-        var assetUri = new Uri(latestAsset.First().Url);
+        var assetUri = new Uri(latestAsset[0].Url);
         var reqParams = new Dictionary<string, string>();
         var response = await client.Connection.Get<object>(assetUri, reqParams, "application/octet-stream");
 
-        var tempPath = Path.GetTempPath();
-        var destinationPath = tempPath + "datafusRelease";
+        var destinationPath = context.LocalPathProvider.TempPath.FullPath + "datafusRelease";
 
         if (OperatingSystem.IsLinux())
-            destinationPath = "/home/runner/work/_temp/datafusRelease";
+            destinationPath = context.LocalPathProvider.TempPath.FullPath + "datafusRelease";
 
         context.EnsureDirectoryDoesNotExist(destinationPath);
 
