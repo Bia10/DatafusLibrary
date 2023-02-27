@@ -20,9 +20,9 @@ public sealed class BuildTask : AsyncFrostingTask<LaunchContext>
             Configuration = "Debug"
         };
 
-        foreach (var project in context.ProjectsWithoutLauncher)
+        foreach (var project in context.ProjectsToProcess)
         {
-            context.Information($"Building at:  {project.Path.FullPath}");
+            context.Information($"Building project: {project.Path.FullPath}");
             context.DotNetBuild(project.Path.FullPath, buildSettings);
         }
 

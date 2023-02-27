@@ -3,8 +3,8 @@ name: Workflow Dispatch
 on:
   workflow_dispatch:
   #push:
-    #branches:
-      #- master
+  #  branches:
+  #    - master
 
 env:
   VERSION: 0.0.1
@@ -27,7 +27,7 @@ jobs:
       run: dotnet restore DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj
 
     #- name: Build launcher
-      #run: dotnet build DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj --configuration Release --no-restore --verbosity normal
+    #  run: dotnet build DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj --configuration Release --no-restore --verbosity normal
     
     - name: Publish launcher
       run: dotnet publish DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj -c Release -f net7.0 -r linux-x64 --self-contained false
@@ -35,17 +35,17 @@ jobs:
     - name: Run launcher
       run: dotnet DatafusLibrary.Launcher/bin/Release/net7.0/linux-x64/DatafusLibrary.Launcher.dll
 
-  Publish:
-     runs-on: ubuntu-latest
-     needs: Build-and-test
+  #Publish:
+  #   runs-on: ubuntu-latest
+  #   needs: Build-and-test
      
-     steps:
-     - name: Publish release
-       uses: "marvinpinto/action-automatic-releases@latest"
-       with:
-         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-         automatic_release_tag: ${{ env.VERSION }}
-         prerelease: false
-         title: ${{ env.VERSION }}
-         files: |
-          DatafusLibrary/DatafusLibrary.SourceGenerators.Tests/bin/Debug/net7.0_release.zip
+  #   steps:
+  #   - name: Publish release
+  #     uses: "marvinpinto/action-automatic-releases@latest"
+  #     with:
+  #       repo_token: "${{ secrets.GITHUB_TOKEN }}"
+  #       automatic_release_tag: ${{ env.VERSION }}
+  #       prerelease: false
+  #       title: ${{ env.VERSION }}
+  #       files: |
+  #        DatafusLibrary/DatafusLibrary.SourceGenerators.Tests/bin/Debug/net7.0_release.zip

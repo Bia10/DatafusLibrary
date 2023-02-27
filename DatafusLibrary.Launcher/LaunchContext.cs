@@ -9,30 +9,27 @@ public sealed class LaunchContext : FrostingContext
 {
     public LaunchContext(ICakeContext context) : base(context)
     {
-        LocalPathProvider = new PathProvider(context);
+        context.Information("LaunchContext build started...");
 
-        context.Information("Building launch context ...");
+        LocalPathProvider = new PathProvider(context);
 
         SolutionParserResult = context.ParseSolution(LocalPathProvider.SolutionPath);
 
         foreach (var project in SolutionParserResult.Projects)
-        {
-            context.Information($"Project: {project.Name}");
-            context.Information($"Project path: {project.Path.FullPath}");
-        }
+            context.Information($"Found project: {project.Name} at path: {project.Path.FullPath}");
 
-        ProjectsWithoutLauncher = SolutionParserResult.Projects
+        ProjectsToProcess = SolutionParserResult.Projects
             .Where(project => !project.Name.Equals("DatafusLibrary.Launcher", StringComparison.Ordinal))
             .ToList();
 
-        LocalPathProvider.ToTestProjectFullPath(ProjectsWithoutLauncher);
-        LocalPathProvider.ToTestProjectOutput();
-        LocalPathProvider.ToTestAssemblyPath();
+        LocalPathProvider.LoadTestProjectFullPath(ProjectsToProcess);
+
+        context.Information("LaunchContext build finished...");
     }
 
     public PathProvider LocalPathProvider { get; }
 
     public SolutionParserResult SolutionParserResult { get; }
 
-    public List<SolutionProject> ProjectsWithoutLauncher { get; }
+    public List<SolutionProject> ProjectsToProcess { get; }
 }

@@ -12,13 +12,13 @@ public sealed class CleanTask : AsyncFrostingTask<LaunchContext>
     {
         context.Information("Clean started...");
 
-        foreach (var project in context.ProjectsWithoutLauncher)
+        foreach (var project in context.ProjectsToProcess)
         {
             var projectFullPath = project.Path.FullPath;
             context.Information($"Project fullPath: {projectFullPath}");
 
             var replacementSegment = project.Path.Segments.Last();
-            context.Information($"Replacement segment:: {replacementSegment}");
+            context.Information($"Replacement segment: {replacementSegment}");
 
             var pathBin = projectFullPath.Replace(replacementSegment, "bin");
             var pathObj = projectFullPath.Replace(replacementSegment, "obj");
