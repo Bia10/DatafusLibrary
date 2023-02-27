@@ -30,7 +30,7 @@ jobs:
     #  run: dotnet build DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj --configuration Release --no-restore --verbosity normal
     
     - name: Publish launcher
-      run: dotnet publish DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj -c Release -f net7.0 -r linux-x64 --self-contained false --no-restore
+      run: dotnet publish DatafusLibrary.Launcher/DatafusLibrary.Launcher.csproj -c Release -f net7.0 -r linux-x64 --self-contained false
 
     - name: Run launcher
       run: dotnet DatafusLibrary.Launcher/bin/Release/net7.0/linux-x64/DatafusLibrary.Launcher.dll
