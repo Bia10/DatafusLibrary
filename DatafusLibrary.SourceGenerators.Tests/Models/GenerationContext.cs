@@ -24,26 +24,22 @@ public class GenerationContext
         GenerationResults = generationResults;
     }
 
-    public string GenerationOutputPath { get; set; }
-    public string OutputAssemblyName { get; set; }
-    public string InputTemplateName { get; set; }
-    public string JsonDataDirectoryPath { get; set; }
-    public string GeneratedSrcFileSuffix { get; set; }
-
-    public List<SyntaxTree> SuccessSyntaxTrees { get; set; }
-    public List<SyntaxTree> FailedSyntaxTrees { get; set; }
-    public List<GeneratorResult> GenerationResults { get; set; }
+    public string GenerationOutputPath { get; }
+    public string OutputAssemblyName { get; }
+    public string InputTemplateName { get; }
+    public string JsonDataDirectoryPath { get; init; }
+    public string GeneratedSrcFileSuffix { get; }
+    public List<SyntaxTree> SuccessSyntaxTrees { get; }
+    public List<SyntaxTree> FailedSyntaxTrees { get; }
+    public List<GeneratorResult> GenerationResults { get; }
 
     public static string SetInputDataPath()
     {
         try
         {
-            if (OperatingSystem.IsLinux())
-                return "/home/runner/work/_temp/datafusRelease/data/entities_json";
-
-            var tempPath = Path.GetTempPath();
-
-            return tempPath + "\\datafusRelease\\data\\entities_json";
+            return OperatingSystem.IsLinux()
+                ? "/home/runner/work/_temp/datafusRelease/data/entities_json"
+                : Path.GetTempPath() + @"\datafusRelease\data\entities_json";
         }
         catch (Exception ex)
         {

@@ -7,7 +7,7 @@ on:
   #    - master
 
 env:
-  VERSION: 0.0.1
+  VERSION: 0.0.2
 
 jobs:
   Build-and-test:
@@ -35,17 +35,17 @@ jobs:
     - name: Run launcher
       run: dotnet DatafusLibrary.Launcher/bin/Release/net7.0/linux-x64/DatafusLibrary.Launcher.dll
 
-  #Publish:
-  #   runs-on: ubuntu-latest
-  #   needs: Build-and-test
+  Publish:
+     runs-on: ubuntu-latest
+     needs: Build-and-test
      
-  #   steps:
-  #   - name: Publish release
-  #     uses: "marvinpinto/action-automatic-releases@latest"
-  #     with:
-  #       repo_token: "${{ secrets.GITHUB_TOKEN }}"
-  #       automatic_release_tag: ${{ env.VERSION }}
-  #       prerelease: false
-  #       title: ${{ env.VERSION }}
-  #       files: |
-  #        DatafusLibrary/DatafusLibrary.SourceGenerators.Tests/bin/Debug/net7.0_release.zip
+     steps:
+     - name: Publish release
+       uses: "marvinpinto/action-automatic-releases@latest"
+       with:
+         repo_token: "${{ secrets.GITHUB_TOKEN }}"
+         automatic_release_tag: ${{ env.VERSION }}
+         prerelease: false
+         title: ${{ env.VERSION }}
+         files: |
+          ${{ env.GITHUB_WORKSPACE }}/DatafusLibrary.SourceGenerators.Tests/bin/Debug/net7.0_release.zip
