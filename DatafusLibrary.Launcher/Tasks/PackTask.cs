@@ -30,6 +30,10 @@ public sealed class PackTask : AsyncFrostingTask<LaunchContext>
 
             if (!context.FileExists(testProjectOutputPath + "_release.zip"))
                 context.Error($"Zip archive not found at destination: {testProjectOutputPath + "_release.zip"}");
+
+            var releaseFile = new FileInfo(testProjectOutputPath + "_release.zip");
+            if (!releaseFile.Exists || releaseFile.Length < 1000 || !releaseFile.Extension.Equals(".zip", StringComparison.Ordinal))
+                context.Error($"Zip archive is corrupted or invalid: {releaseFile.Name}");
         }
         catch (Exception ex)
         {
