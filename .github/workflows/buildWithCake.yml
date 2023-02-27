@@ -51,7 +51,7 @@ jobs:
        run: echo "Release archive exists!"
 
      - name: Publish release
-       if: steps.check_files.conclusion == success 
+       if: steps.check_files.conclusion == 'success' 
        uses: "marvinpinto/action-automatic-releases@latest"
        with:
          repo_token: "${{ secrets.GITHUB_TOKEN }}"
