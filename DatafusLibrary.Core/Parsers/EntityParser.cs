@@ -52,9 +52,8 @@ public static partial class EntityParser
         if (string.IsNullOrEmpty(pathToJson))
             throw new ArgumentNullException(nameof(pathToJson));
 
-        var entityLines = await FileReader.ReadAllLinesAsync(pathToJson);
-
-        var entity = await Json.DeserializeAsync<Entity>(string.Join(string.Empty, entityLines));
+        var entityJson = await FileReader.ReadAllAsync(pathToJson);
+        var entity = await Json.DeserializeAsync<Entity>(entityJson);
 
         if (entity is null)
             throw new InvalidOperationException();
@@ -72,14 +71,12 @@ public static partial class EntityParser
 
         foreach (var fileName in Directory.GetFiles(pathToDir))
         {
-            var linesUpToData = await FileReader.ReadAllLinesAsync(fileName, terminatorLine);
+            var linesUpToData = await FileReader.ReadAllAsync(fileName, terminatorLine);
 
-            var joined = string.Join(string.Empty, linesUpToData);
+            if (linesUpToData.EndsWith(','))
+                linesUpToData = MyRegex().Replace(linesUpToData, "}");
 
-            if (joined.EndsWith(','))
-                joined = MyRegex().Replace(joined, "}");
-
-            var entityType = await Json.DeserializeAsync<Entity>(joined);
+            var entityType = await Json.DeserializeAsync<Entity>(linesUpToData);
 
             if (entityType is not null)
             {

@@ -67,24 +67,38 @@ public static class EntityDefinitionParser
         return result;
     }
 
+    private static EntityValueType DecodeValueType(int fieldTypeValue)
+    {
+        return fieldTypeValue switch
+        {
+            1 or 2 or 3 or 4 or 5 => EntityValueType.Reference,
+            -1 => EntityValueType.Integer,
+            -2 => EntityValueType.Boolean,
+            -3 => EntityValueType.String,
+            -4 => EntityValueType.Float,
+            -5 => EntityValueType.TranslationKey,
+            -6 => EntityValueType.UnsignedInteger,
+            -99 => EntityValueType.Vector,
+            _ => throw new ArgumentOutOfRangeException(nameof(fieldTypeValue), fieldTypeValue, "Unrecognized type value")
+        };
+    }
+
     public static string DecodeTypeValueToTypeStr(int fieldTypeValue, string fieldTypeName, Field? vectorType)
     {
-        var fieldType = fieldTypeValue switch
-        {
-            -1 => "int",
-            -2 => "bool",
-            -3 => "string",
-            -4 => "float",
-            -5 => "int",
-            -6 => "uint",
-            -99 => GetVectorizedType(fieldTypeValue, vectorType),
-            _ => GetReferenceName(fieldTypeName)
-        };
+        var decodedType = DecodeValueType(fieldTypeValue);
 
-        if (string.IsNullOrEmpty(fieldType))
+        var fieldType = decodedType switch
         {
-            // Console.WriteLine($"Unrecognized value: {fieldTypeValue} of type name: {fieldTypeName}");
-        }
+            EntityValueType.Reference => GetReferenceName(fieldTypeName),
+            EntityValueType.Integer => "int",
+            EntityValueType.Boolean => "bool",
+            EntityValueType.String => "string",
+            EntityValueType.Float => "float",
+            EntityValueType.TranslationKey => "int",
+            EntityValueType.UnsignedInteger => "uint",
+            EntityValueType.Vector => GetVectorizedType(fieldTypeValue, vectorType),
+            _ => throw new ArgumentOutOfRangeException()
+        };
 
         return fieldType;
     }
@@ -148,7 +162,7 @@ public static class EntityDefinitionParser
         return string.Empty;
     }
 
-    public static string GetReferenceName(string fieldTypeName)
+    private static string GetReferenceName(string fieldTypeName)
     {
         return fieldTypeName switch
         {
@@ -156,7 +170,7 @@ public static class EntityDefinitionParser
             "parameters" => "QuestObjectiveParameters",
             "coords" => "Point",
             "bounds" => "Rectangle",
-            _ => string.Empty
+            _ => throw new ArgumentOutOfRangeException(nameof(fieldTypeName), fieldTypeName, "Unrecognized reference name")
         };
     }
 }

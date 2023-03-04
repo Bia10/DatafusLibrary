@@ -15,9 +15,8 @@ public static class EntityDataParser
 
     public static async Task<T?> GetDataFromJson<T>(string pathToJson)
     {
-        var allLines = await FileReader.ReadAllLinesAsync(pathToJson);
-
-        var entity = await Json.DeserializeAsync<Entity>(string.Join(string.Empty, allLines));
+        var allLines = await FileReader.ReadAllAsync(pathToJson);
+        var entity = await Json.DeserializeAsync<Entity>(allLines);
 
         if (entity is null)
             throw new InvalidOperationException();

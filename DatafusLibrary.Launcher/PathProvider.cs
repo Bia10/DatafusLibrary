@@ -99,7 +99,7 @@ public class PathProvider : FrostingContext
     private void LoadTestProjectOutputPath()
     {
         var testProjectOutputPath = _testProjectPath.FullPath.Replace(
-                _testProjectPath.Segments.Last(), 
+                _testProjectPath.Segments.Last(),
                 DebugOutputPathSegment.Replace(@"\", @"/"))
             .Replace("//", "/");
 
