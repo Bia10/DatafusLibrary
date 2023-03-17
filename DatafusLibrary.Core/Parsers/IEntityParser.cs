@@ -13,17 +13,23 @@ public interface IEntityParser
 
     Task<string> GetEntityDefinitionJsonAsync(string? pathToJson);
 
+    Task<Entity> GetEntityAsync(string? entityDefinitionJson);
+
+    Task<IEnumerable<Entity>> GetAllEntityFromDirectoryAsync(string pathToDir);
+
     Task<string> GetDefinitionStringAsync(string? pathToJson);
 
     Task<(string, string)> ParseToEntityDefDataTupleAsync(string? pathToJson);
 
+    IEnumerable<BasicClass> GetClassesFromPackageGroupAsync(IEnumerable<EntityType> packageGroup);
+
     Task<IEnumerable<BasicClass>> GetAllBasicClassesFromDirAsync(string dirPath);
 
-    Task<IEnumerable<EntityType>> GetAllEntityClassesAsync(string pathToDir);
+    Task<IEnumerable<EntityType>> GetAllEntityTypesAsync(string pathToDir);
 
-    Task<IEnumerable<IGrouping<string?, EntityType>>> GetAllEntityClassesPackageGroupsAsync(string pathToDir);
+    Task<IEnumerable<IGrouping<string?, EntityType>>> GetAllEntityTypesByPackageGroupsAsync(string pathToDir);
 
-    Task<IGrouping<string?, EntityType>> GetEntityClassesGroupsByPackageNamesAsync(string pathToDir, string packageName);
+    Task<IGrouping<string?, EntityType>> GetEntityTypesInGroupByPackageNameAsync(string pathToDir, string packageName);
 
-    IEnumerable<BasicClass> GetClassesFromPackageGroupAsync(IGrouping<string?, EntityType> packageGroup);
+    Task<List<IEnumerable<EntityType>>> GetAllEntityClassesInDirectoryAsync(string pathToDir);
 }

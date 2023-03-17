@@ -102,7 +102,8 @@ public class EntityDefinitionParser : IEntityDefinitionParser
             EntityValueType.TranslationKey => "int",
             EntityValueType.UnsignedInteger => "uint",
             EntityValueType.Vector => GetVectorizedType(vectorType),
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new ArgumentOutOfRangeException(nameof(fieldTypeValue),
+                fieldTypeValue, "Unrecognized type value")
         };
 
         return fieldType;

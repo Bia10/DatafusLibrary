@@ -5,7 +5,7 @@ namespace DatafusLibrary.Core.LanguageModels.Sharp;
 
 public class BasicClass
 {
-    public string GenerationTime => DateTime.Now.ToString(CultureInfo.InvariantCulture);
+    public static string GenerationTime => DateTime.Now.ToString(CultureInfo.InvariantCulture);
 
     public IEnumerable<string> Usings { get; set; } = Enumerable.Empty<string>();
 

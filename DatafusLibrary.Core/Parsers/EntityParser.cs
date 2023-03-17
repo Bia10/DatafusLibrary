@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using DatafusLibrary.Core.DataDefinitions;
 using DatafusLibrary.Core.Extensions;
 using DatafusLibrary.Core.IO;
@@ -10,7 +9,7 @@ using DatafusLibrary.Core.Serialization;
 
 namespace DatafusLibrary.Core.Parsers;
 
-public partial class EntityParser : IEntityParser
+public class EntityParser : IEntityParser
 {
     private readonly IEntityDefinitionParser _entityDefinitionParser;
 
@@ -45,21 +44,6 @@ public partial class EntityParser : IEntityParser
         return await Task.FromResult(stringBuilder.ToString());
     }
 
-    public async Task<IEnumerable<BasicClass>> GetAllBasicClassesFromDirAsync(string dirPath)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(dirPath);
-
-        var allBasicClasses = new List<BasicClass>();
-
-        var allEntityClassesPackageGroups = await GetAllEntityClassesPackageGroupsAsync(dirPath);
-
-        foreach (var basicClassesOfPackageGroup in
-                 allEntityClassesPackageGroups.Select(GetClassesFromPackageGroupAsync))
-            allBasicClasses.AddRange(basicClassesOfPackageGroup);
-
-        return allBasicClasses;
-    }
-
     public async Task<string> GetEntityJsonAsync(string? pathToJson)
     {
         ArgumentException.ThrowIfNullOrEmpty(pathToJson);
@@ -74,12 +58,15 @@ public partial class EntityParser : IEntityParser
         return await FileReader.ReadAllAsync(pathToJson, "\t\"data\": [");
     }
 
-    public async Task<Entity> GetEntityTypeAsync(string? entityDefinitionJson)
+    public async Task<Entity> GetEntityAsync(string? entityDefinitionJson)
     {
         ArgumentException.ThrowIfNullOrEmpty(entityDefinitionJson);
 
         if (entityDefinitionJson.EndsWith(",", StringComparison.OrdinalIgnoreCase))
-            entityDefinitionJson = MyRegex().Replace(entityDefinitionJson, "}");
+        {
+            entityDefinitionJson = entityDefinitionJson.Remove(entityDefinitionJson.Length - 1, 1);
+            entityDefinitionJson += '}';
+        }
 
         var entityType = await Json.DeserializeAsync<Entity>(entityDefinitionJson);
 
@@ -88,14 +75,31 @@ public partial class EntityParser : IEntityParser
         return entityType;
     }
 
+    public async Task<IEnumerable<Entity>> GetAllEntityFromDirectoryAsync(string pathToDir)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(pathToDir);
+
+        var entityDefinitions = new List<Entity>();
+
+        foreach (var fileName in Directory.EnumerateFiles(pathToDir))
+        {
+            var entityDefinitionJson = await GetEntityDefinitionJsonAsync(fileName);
+            var entity = await GetEntityAsync(entityDefinitionJson);
+
+            entityDefinitions.Add(entity);
+        }
+
+        return entityDefinitions;
+    }
+
     public async Task<string> GetDefinitionStringAsync(string? pathToJson)
     {
         ArgumentException.ThrowIfNullOrEmpty(pathToJson);
 
         var entityDefinitionJson = await GetEntityDefinitionJsonAsync(pathToJson);
-        var entityType = await GetEntityTypeAsync(entityDefinitionJson);
+        var entity = await GetEntityAsync(entityDefinitionJson);
 
-        var defArray = entityType.def?.ToStringArray();
+        var defArray = entity.def?.ToStringArray();
 
         ArgumentNullException.ThrowIfNull(defArray);
 
@@ -109,13 +113,38 @@ public partial class EntityParser : IEntityParser
         var entityJson = await GetEntityJsonAsync(pathToJson);
         var entity = await Json.DeserializeAsync<Entity>(entityJson);
 
-        if (entity is null)
-            throw new InvalidOperationException();
-
-        return await ParseToStringTupleAsync(entity);
+        return await ParseToStringTupleAsync(entity ?? throw new InvalidOperationException());
     }
 
-    public async Task<IEnumerable<EntityType>> GetAllEntityClassesAsync(string pathToDir)
+    public IEnumerable<BasicClass> GetClassesFromPackageGroupAsync(IEnumerable<EntityType> packageGroup)
+    {
+        return (from entityType in packageGroup
+                where entityType.fields is not null
+                select _entityDefinitionParser.ParseToClassModel(entityType))
+            .ToList();
+    }
+
+    public async Task<IEnumerable<BasicClass>> GetAllBasicClassesFromDirAsync(string dirPath)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(dirPath);
+
+        var allBasicClasses = new List<BasicClass>();
+
+        var allEntityClassesPackageGroups = await GetAllEntityTypesByPackageGroupsAsync(dirPath);
+
+        Parallel.ForEach(allEntityClassesPackageGroups, packageGroup =>
+        {
+            var basicClassesOfPackageGroup = GetClassesFromPackageGroupAsync(packageGroup);
+            lock (allBasicClasses)
+            {
+                allBasicClasses.AddRange(basicClassesOfPackageGroup);
+            }
+        });
+
+        return allBasicClasses;
+    }
+
+    public async Task<IEnumerable<EntityType>> GetAllEntityTypesAsync(string pathToDir)
     {
         ArgumentException.ThrowIfNullOrEmpty(pathToDir);
 
@@ -125,11 +154,11 @@ public partial class EntityParser : IEntityParser
             .ToList();
     }
 
-    public async Task<IEnumerable<IGrouping<string?, EntityType>>> GetAllEntityClassesPackageGroupsAsync(string pathToDir)
+    public async Task<IEnumerable<IGrouping<string?, EntityType>>> GetAllEntityTypesByPackageGroupsAsync(string pathToDir)
     {
         ArgumentException.ThrowIfNullOrEmpty(pathToDir);
 
-        var entityClasses = await GetAllEntityClassesAsync(pathToDir);
+        var entityClasses = await GetAllEntityTypesAsync(pathToDir);
 
         var listOfEntitiesGroupedByPackage = entityClasses.GroupBy(entityClass => entityClass.packageName)
             .Select(grouping => grouping).Where(grouping => !string.IsNullOrEmpty(grouping.Key))
@@ -138,12 +167,12 @@ public partial class EntityParser : IEntityParser
         return listOfEntitiesGroupedByPackage;
     }
 
-    public async Task<IGrouping<string?, EntityType>> GetEntityClassesGroupsByPackageNamesAsync(string pathToDir,
+    public async Task<IGrouping<string?, EntityType>> GetEntityTypesInGroupByPackageNameAsync(string pathToDir,
         string packageName)
     {
         ArgumentException.ThrowIfNullOrEmpty(pathToDir);
 
-        var entityClasses = await GetAllEntityClassesAsync(pathToDir);
+        var entityClasses = await GetAllEntityTypesAsync(pathToDir);
 
         var entityClassesGroupedByPackageName = entityClasses.GroupBy(entityClass => entityClass.packageName)
             .Select(grouping => grouping)
@@ -153,36 +182,26 @@ public partial class EntityParser : IEntityParser
         return entityClassesGroupedByPackageName;
     }
 
-    public IEnumerable<BasicClass> GetClassesFromPackageGroupAsync(IGrouping<string?, EntityType> packageGroup)
-    {
-        return (from entityType in packageGroup
-                where entityType.fields is not null
-                select _entityDefinitionParser.ParseToClassModel(entityType))
-            .ToList();
-    }
-
-    public async Task<List<List<EntityType>>> GetAllEntityClassesInDirectoryAsync(string pathToDir)
+    public async Task<List<IEnumerable<EntityType>>> GetAllEntityClassesInDirectoryAsync(string pathToDir)
     {
         ArgumentException.ThrowIfNullOrEmpty(pathToDir);
 
-        var entityDefinitions = new List<List<EntityType>>();
+        var entityDefinitions = new List<IEnumerable<EntityType>>();
 
-        foreach (var fileName in Directory.GetFiles(pathToDir))
+        foreach (var fileName in Directory.EnumerateFiles(pathToDir))
         {
             var entityDefinitionJson = await GetEntityDefinitionJsonAsync(fileName);
-            var entityType = await GetEntityTypeAsync(entityDefinitionJson);
+            var entity = await GetEntityAsync(entityDefinitionJson);
 
-            JsonSerializerOptions options = new()
+            var currentDefinition = JsonSerializer.Serialize(entity.def, new JsonSerializerOptions()
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 WriteIndented = true
-            };
-
-            var currentDefinition = JsonSerializer.Serialize(entityType.def, options);
+            });
 
             //Console.WriteLine($"Group name: |{currentDefinition}| members count.");
 
-            var entityDefinition = await Json.DeserializeAsync<List<EntityType>>(currentDefinition);
+            var entityDefinition = await Json.DeserializeAsync<IEnumerable<EntityType>>(currentDefinition);
 
             if (entityDefinition is not null)
                 entityDefinitions.Add(entityDefinition);
@@ -190,7 +209,4 @@ public partial class EntityParser : IEntityParser
 
         return entityDefinitions;
     }
-
-    [GeneratedRegex(",$")]
-    private static partial Regex MyRegex();
 }

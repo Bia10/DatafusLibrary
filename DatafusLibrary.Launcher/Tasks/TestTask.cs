@@ -75,7 +75,12 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
                     context.Information(
                         $"Passing test: {passedTest.TestMethod.Method.Name} execution time: {passedTest.ExecutionTime}");
 
-                context.Information($"Failed test: {xUnitTestRunner.ExecutionContext.TestsFailed.Count}");
+                if (xUnitTestRunner.ExecutionContext.TestsFailed.Any())
+                {
+                    context.Warning($"Failed tests: {xUnitTestRunner.ExecutionContext.TestsFailed.Count}");
+
+                    return Task.FromException(new InvalidOperationException("Tests failed..."));
+                }
             }
 
             xUnitTestRunner.Dispose();

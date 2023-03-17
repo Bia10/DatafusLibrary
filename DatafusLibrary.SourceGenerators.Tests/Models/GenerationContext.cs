@@ -4,11 +4,10 @@ namespace DatafusLibrary.SourceGenerators.Tests.Models;
 
 public class GenerationContext
 {
-    public GenerationContext(
+    internal GenerationContext(
         string outputAssemblyName,
         string generationOutputPath,
         string inputTemplateName,
-        string jsonDataDirectoryPath,
         string generatedSrcFileSuffix,
         List<SyntaxTree> successSyntaxTrees,
         List<SyntaxTree> failedSyntaxTrees,
@@ -17,11 +16,18 @@ public class GenerationContext
         OutputAssemblyName = outputAssemblyName;
         GenerationOutputPath = generationOutputPath;
         InputTemplateName = inputTemplateName;
-        JsonDataDirectoryPath = jsonDataDirectoryPath;
         GeneratedSrcFileSuffix = generatedSrcFileSuffix;
         SuccessSyntaxTrees = successSyntaxTrees;
         FailedSyntaxTrees = failedSyntaxTrees;
         GenerationResults = generationResults;
+
+        JsonDataDirectoryPath = OperatingSystem.IsLinux()
+            ? "/home/runner/work/_temp/datafusRelease/data/entities_json"
+            : Path.GetTempPath() + @"\datafusRelease\data\entities_json";
+
+        GenerationOutputDirectoryPath = CreateOutputDir(JsonDataDirectoryPath, GenerationOutputPath);
+        GenerationOutputAssemblyPath = Path.Combine(GenerationOutputDirectoryPath +
+                                                    (OperatingSystem.IsLinux() ? "/" : "\\") + OutputAssemblyName);
     }
 
     public string GenerationOutputPath { get; }
@@ -29,24 +35,11 @@ public class GenerationContext
     public string InputTemplateName { get; }
     public string JsonDataDirectoryPath { get; init; }
     public string GeneratedSrcFileSuffix { get; }
+    public string GenerationOutputDirectoryPath { get; }
+    public string GenerationOutputAssemblyPath { get; }
     public List<SyntaxTree> SuccessSyntaxTrees { get; }
     public List<SyntaxTree> FailedSyntaxTrees { get; }
     public List<GeneratorResult> GenerationResults { get; }
-
-    public static string SetInputDataPath()
-    {
-        try
-        {
-            return OperatingSystem.IsLinux()
-                ? "/home/runner/work/_temp/datafusRelease/data/entities_json"
-                : Path.GetTempPath() + @"\datafusRelease\data\entities_json";
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            throw;
-        }
-    }
 
     public static string CreateOutputDir(string inputDataPath, string outputPath)
     {

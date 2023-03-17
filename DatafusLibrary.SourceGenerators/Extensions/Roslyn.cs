@@ -142,7 +142,7 @@ public static class Roslyn
             or SpecialType.System_Collections_Generic_IReadOnlyCollection_T;
     }
 
-    private static IEnumerable<INamedTypeSymbol> GetNamedTypeSymbols(Compilation compilation)
+    public static IEnumerable<INamedTypeSymbol> GetNamedTypeSymbols(Compilation compilation)
     {
         var stack = new Stack<INamespaceSymbol>();
         stack.Push(compilation.GlobalNamespace);
