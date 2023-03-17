@@ -25,10 +25,8 @@ public class EntityDataParser : IEntityDataParser
         var allLines = await FileReader.ReadAllAsync(pathToJson);
         var entity = await Json.DeserializeAsync<Entity>(allLines);
 
-        if (entity is null)
-            throw new InvalidOperationException();
-
-        var (_, dataJson) = await _entityParser.ParseToStringTupleAsync(entity);
+        var (_, dataJson) = await _entityParser
+            .ParseToStringTupleAsync(entity ?? throw new InvalidOperationException());
 
         return await Json.DeserializeAsync<T>(dataJson, Options);
     }

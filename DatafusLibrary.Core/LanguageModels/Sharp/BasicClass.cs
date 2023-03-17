@@ -7,7 +7,7 @@ public class BasicClass
 {
     public string GenerationTime => DateTime.Now.ToString(CultureInfo.InvariantCulture);
 
-    public List<string> Usings { get; set; } = new();
+    public IEnumerable<string> Usings { get; set; } = Enumerable.Empty<string>();
 
     public string Namespace { get; set; } = string.Empty;
 
@@ -21,11 +21,11 @@ public class BasicClass
 
     public string BaseClassAccessor => string.IsNullOrEmpty(ClassBase) ? string.Empty : ":";
 
-    public List<PropertyDescriptor> Properties { get; set; } = new();
+    public IEnumerable<PropertyDescriptor> Properties { get; set; } = Enumerable.Empty<PropertyDescriptor>();
 
-    public List<ParameterDescriptor> ConstructorParameters { get; set; } = new();
+    public IEnumerable<ParameterDescriptor> ConstructorParameters { get; set; } = Enumerable.Empty<ParameterDescriptor>();
 
-    public List<PropertyAssignDescriptor> InjectedProperties { get; set; } = new();
+    public IEnumerable<PropertyAssignDescriptor> InjectedProperties { get; set; } = Enumerable.Empty<PropertyAssignDescriptor>();
 
     public IEnumerable<ParameterDescriptor> Constructor => ConstructorParameters.Concat(InjectedProperties.Select(x => x.ToCamelCase()));
 

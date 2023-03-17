@@ -9,19 +9,22 @@ public class EntityDefinitionParser : IEntityDefinitionParser
 {
     public async Task<List<BasicClass>> ParseToBasicClasses(string entityDefinitions)
     {
+        ArgumentException.ThrowIfNullOrEmpty(entityDefinitions);
+
         var entityDefinitionsJson = await Json.DeserializeAsync<List<EntityType>>(entityDefinitions);
 
         List<BasicClass> basicClasses = new();
 
         if (entityDefinitionsJson is not null && entityDefinitionsJson.Any())
-            basicClasses.AddRange(entityDefinitionsJson.Select(entityDefinition
-                => ParseToClassModel(entityDefinition, new BasicClass())));
+            basicClasses.AddRange(entityDefinitionsJson.Select(ParseToClassModel));
 
         return basicClasses;
     }
 
-    public BasicClass ParseToClassModel(EntityType entityDefinition, BasicClass classModel)
+    public BasicClass ParseToClassModel(EntityType entityDefinition)
     {
+        var classModel = new BasicClass();
+
         ArgumentNullException.ThrowIfNull(entityDefinition);
 
         classModel.Namespace = entityDefinition.packageName ?? string.Empty;
@@ -33,11 +36,28 @@ public class EntityDefinitionParser : IEntityDefinitionParser
         return classModel;
     }
 
-    public List<PropertyDescriptor> ParseProperties(List<Field> fields)
+    public (string name, string type, Field? vectorTypes) ParseField(Field encodedField)
     {
-        var properties = new List<PropertyDescriptor>();
+        ArgumentNullException.ThrowIfNull(encodedField);
 
-        foreach (var field in fields)
+        (string name, string type, Field? vectorTypes) result = new()
+        {
+            name = encodedField.name ?? string.Empty,
+            type = DecodeTypeValueToTypeStr(encodedField.type,
+                encodedField.name ?? string.Empty,
+                encodedField.vectorTypes),
+            vectorTypes = encodedField.vectorTypes
+        };
+
+        return result;
+    }
+
+    public IEnumerable<PropertyDescriptor> ParseProperties(IEnumerable<Field> fields)
+    {
+        var entityFieldsArray = fields as Field[] ?? fields.ToArray();
+        var properties = new List<PropertyDescriptor>(entityFieldsArray.Length);
+
+        foreach (var field in entityFieldsArray)
         {
             var (name, type, _) = ParseField(field);
 
@@ -57,7 +77,7 @@ public class EntityDefinitionParser : IEntityDefinitionParser
     {
         return fieldTypeValue switch
         {
-            1 or 2 or 3 or 4 or 5 => EntityValueType.Reference,
+            >= 1 and <= 5 => EntityValueType.Reference,
             -1 => EntityValueType.Integer,
             -2 => EntityValueType.Boolean,
             -3 => EntityValueType.String,
@@ -66,16 +86,13 @@ public class EntityDefinitionParser : IEntityDefinitionParser
             -6 => EntityValueType.UnsignedInteger,
             -99 => EntityValueType.Vector,
             _ => throw new ArgumentOutOfRangeException(nameof(fieldTypeValue),
-                fieldTypeValue,
-                "Unrecognized type value")
+                fieldTypeValue, "Unrecognized type value")
         };
     }
 
     public string DecodeTypeValueToTypeStr(int fieldTypeValue, string fieldTypeName, Field? vectorType)
     {
-        var decodedType = DecodeValueType(fieldTypeValue);
-
-        var fieldType = decodedType switch
+        var fieldType = DecodeValueType(fieldTypeValue) switch
         {
             EntityValueType.Reference => GetReferenceName(fieldTypeName),
             EntityValueType.Integer => "int",
@@ -84,68 +101,70 @@ public class EntityDefinitionParser : IEntityDefinitionParser
             EntityValueType.Float => "float",
             EntityValueType.TranslationKey => "int",
             EntityValueType.UnsignedInteger => "uint",
-            EntityValueType.Vector => GetVectorizedType(fieldTypeValue, vectorType),
+            EntityValueType.Vector => GetVectorizedType(vectorType),
             _ => throw new ArgumentOutOfRangeException()
         };
 
         return fieldType;
     }
 
-    public string GetVectorizedType(int fieldTypeValue, Field? vectorType)
+    private static string FormatArgumentType(string argumentType)
     {
-        if (string.IsNullOrEmpty(vectorType?.name))
-            throw new ArgumentNullException(nameof(vectorType));
+        if (argumentType.Contains("::", StringComparison.Ordinal))
+            argumentType = argumentType.Split("::", 2)[1];
+
+        if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
+            argumentType = "float";
+
+        if (argumentType.Equals("String", StringComparison.Ordinal))
+            argumentType = "string";
+
+        return argumentType;
+    }
+
+    public static string GetTwoDimVector(Field? vectorType)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(vectorType?.name);
+
+        var argumentType = vectorType.name
+            .Replace("Vector.<Vector.<", string.Empty, StringComparison.Ordinal)
+            .Replace(">>", string.Empty, StringComparison.Ordinal);
+
+        argumentType = FormatArgumentType(argumentType);
+
+        return $"List<List<{argumentType}>>";
+    }
+
+    public static string GetOneDimVector(Field? vectorType)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(vectorType?.name);
+
+        var argumentType = vectorType.name
+            .Replace("Vector.<", string.Empty, StringComparison.Ordinal)
+            .Replace(">", string.Empty, StringComparison.Ordinal);
+
+        argumentType = FormatArgumentType(argumentType);
+
+        return $"List<{argumentType}>";
+    }
+
+    public string GetVectorizedType(Field? vectorType)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(vectorType?.name);
 
         if (vectorType.name.StartsWith("Vector.<Vector.<", StringComparison.Ordinal))
-        {
-            var argumentType = vectorType.name.Replace("Vector.<Vector.<", string.Empty).Replace(">>", string.Empty);
-
-            if (argumentType.Contains("::"))
-                argumentType = argumentType.Split("::", 2)[1];
-
-            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
-                argumentType = "float";
-
-            return $"List<List<{argumentType}>>";
-        }
+            return GetTwoDimVector(vectorType);
 
         if (vectorType.name.StartsWith("Vector.<", StringComparison.Ordinal))
-        {
-            var argumentType = vectorType.name.Replace("Vector.<", string.Empty).Replace(">", string.Empty);
-
-            if (argumentType.Contains("::"))
-                argumentType = argumentType.Split("::", 2)[1];
-
-            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
-                argumentType = "float";
-
-            if (argumentType.Equals("String"))
-                argumentType = "string";
-
-            return $"List<{argumentType}>";
-        }
-
-        if (fieldTypeValue.Equals(-99) && vectorType.name.StartsWith("Vector.<", StringComparison.Ordinal))
-        {
-            var argumentType = vectorType.name.Replace("Vector.<", string.Empty).Replace(">", string.Empty);
-
-            if (argumentType.Contains("::"))
-                argumentType = argumentType.Split("::", 2)[1];
-
-            if (argumentType.Equals("Number", StringComparison.OrdinalIgnoreCase))
-                argumentType = "float";
-
-            if (argumentType.Equals("String"))
-                argumentType = "string";
-
-            return $"List<{argumentType}>";
-        }
+            return GetOneDimVector(vectorType);
 
         return string.Empty;
     }
 
     public string GetReferenceName(string fieldTypeName)
     {
+        ArgumentException.ThrowIfNullOrEmpty(fieldTypeName);
+
         return fieldTypeName switch
         {
             "bonusCharacteristics" => "MonsterBonusCharacteristics",
@@ -153,22 +172,7 @@ public class EntityDefinitionParser : IEntityDefinitionParser
             "coords" => "Point",
             "bounds" => "Rectangle",
             _ => throw new ArgumentOutOfRangeException(nameof(fieldTypeName),
-                fieldTypeName,
-                "Unrecognized reference name")
+                fieldTypeName, "Unrecognized reference name")
         };
-    }
-
-    public (string name, string type, Field? vectorTypes) ParseField(Field encodedField)
-    {
-        (string name, string type, Field? vectorTypes) result = new()
-        {
-            name = encodedField.name ?? string.Empty,
-            type = DecodeTypeValueToTypeStr(encodedField.type,
-                encodedField.name ?? string.Empty,
-                encodedField.vectorTypes),
-            vectorTypes = encodedField.vectorTypes
-        };
-
-        return result;
     }
 }

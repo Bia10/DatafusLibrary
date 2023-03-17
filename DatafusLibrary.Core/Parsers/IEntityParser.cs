@@ -17,14 +17,13 @@ public interface IEntityParser
 
     Task<(string, string)> ParseToEntityDefDataTupleAsync(string? pathToJson);
 
-    Task<List<BasicClass>> GetAllBasicClassesFromDirAsync(string dirPath);
+    Task<IEnumerable<BasicClass>> GetAllBasicClassesFromDirAsync(string dirPath);
 
-    Task<List<EntityType>> GetAllEntityClassesAsync(string pathToDir);
+    Task<IEnumerable<EntityType>> GetAllEntityClassesAsync(string pathToDir);
 
-    Task<List<IGrouping<string?, EntityType>>> GetAllEntityClassesPackageGroupsAsync(string pathToDir);
+    Task<IEnumerable<IGrouping<string?, EntityType>>> GetAllEntityClassesPackageGroupsAsync(string pathToDir);
 
-    Task<IGrouping<string?, EntityType>>
-        GetEntityClassesGroupsByPackageNamesAsync(string pathToDir, string packageName);
+    Task<IGrouping<string?, EntityType>> GetEntityClassesGroupsByPackageNamesAsync(string pathToDir, string packageName);
 
     IEnumerable<BasicClass> GetClassesFromPackageGroupAsync(IGrouping<string?, EntityType> packageGroup);
 }
