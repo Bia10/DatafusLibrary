@@ -9,9 +9,11 @@ public sealed class LaunchContext : FrostingContext
 {
     public LaunchContext(ICakeContext context) : base(context)
     {
-        context.Information("LaunchContext build started...");
+        context.Information("\n LaunchContext build started...");
 
         LocalPathProvider = new PathProvider(context);
+
+        context.Information("\n Project discovery started...");
 
         SolutionParserResult = context.ParseSolution(LocalPathProvider.SolutionPath);
 
