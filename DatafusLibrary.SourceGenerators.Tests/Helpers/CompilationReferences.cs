@@ -34,8 +34,7 @@ public static class CompilationReferences
 
         try
         {
-            references.AddRange(compileLibraries
-                .SelectMany(compileLibrary => compileLibrary.ResolveReferencePaths())
+            references.AddRange(compileLibraries.SelectMany(compileLibrary => compileLibrary.ResolveReferencePaths())
                 .Select(libraryPath => MetadataReference.CreateFromFile(libraryPath)));
         }
         catch (Exception e)
@@ -48,29 +47,20 @@ public static class CompilationReferences
 
     public static IEnumerable<MetadataReference> GetPredefined(bool useRuntime = false)
     {
-        var refDirectory = "C:\\Program Files\\dotnet\\packs\\Microsoft.NETCore.App.Ref\\7.0.3\\ref\\net7.0\\";
-
-        if (OperatingSystem.IsLinux())
-            refDirectory = "/usr/share/dotnet" + "\\packs\\Microsoft.NETCore.App.Ref\\7.0.3\\ref\\net7.0\\"
-                .Replace('\\', '/');
-
-        var requiredAssemblies = new[]
-        {
-            "System.dll",
-            "System.Runtime.dll",
-            "System.Collections.dll"
-        };
+        var baseDirPath = OperatingSystem.IsLinux() ? "/usr/share/" : Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        var refDirPath = Path.Combine(baseDirPath, "dotnet", "packs", "Microsoft.NETCore.App.Ref", "7.0.4", "ref", "net7.0");
+        var requiredAssemblies = new[] { "System.dll", "System.Runtime.dll", "System.Collections.dll" };
 
         var assemblyPaths = useRuntime switch
         {
             true => Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll"),
-            false => Directory.GetFiles(refDirectory, "*.dll")
+            false => Directory.GetFiles(refDirPath, "*.dll")
         };
 
         var reqAssembliesPath = (
             from requiredAssembly in requiredAssemblies
             from assemblyPath in assemblyPaths
-            where assemblyPath.Replace(refDirectory, string.Empty).Equals(requiredAssembly, StringComparison.Ordinal)
+            where assemblyPath.EndsWith(requiredAssembly, StringComparison.Ordinal)
             select assemblyPath).ToList();
 
         var metadataReferences = reqAssembliesPath

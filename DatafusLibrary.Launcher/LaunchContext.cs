@@ -19,8 +19,7 @@ public sealed class LaunchContext : FrostingContext
             context.Information($"Found project: {project.Name} at path: {project.Path.FullPath}");
 
         ProjectsToProcess = SolutionParserResult.Projects
-            .Where(project => !project.Name.Equals("DatafusLibrary.Launcher", StringComparison.Ordinal))
-            .ToList();
+            .Where(project => !project.Name.Equals("DatafusLibrary.Launcher", StringComparison.Ordinal)).ToList();
 
         LocalPathProvider.LoadTestProjectFullPath(ProjectsToProcess);
 

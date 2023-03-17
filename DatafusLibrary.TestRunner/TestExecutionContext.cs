@@ -69,8 +69,7 @@ public class TestExecutionContext
     {
         try
         {
-            return string.Join(Environment.NewLine, TestOutputs
-                .Select(testOutput => testOutput.Output));
+            return string.Join(Environment.NewLine, TestOutputs.Select(testOutput => testOutput.Output));
         }
         catch (Exception ex)
         {

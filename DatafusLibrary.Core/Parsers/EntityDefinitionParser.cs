@@ -5,25 +5,24 @@ using DatafusLibrary.Core.Serialization;
 
 namespace DatafusLibrary.Core.Parsers;
 
-public static class EntityDefinitionParser
+public class EntityDefinitionParser : IEntityDefinitionParser
 {
-    public static async Task<List<BasicClass>> ParseToBasicClasses(string entityDefinitions)
+    public async Task<List<BasicClass>> ParseToBasicClasses(string entityDefinitions)
     {
         var entityDefinitionsJson = await Json.DeserializeAsync<List<EntityType>>(entityDefinitions);
 
         List<BasicClass> basicClasses = new();
 
         if (entityDefinitionsJson is not null && entityDefinitionsJson.Any())
-            basicClasses.AddRange(entityDefinitionsJson
-                .Select(entityDefinition => ParseToClassModel(entityDefinition, new BasicClass())));
+            basicClasses.AddRange(entityDefinitionsJson.Select(entityDefinition
+                => ParseToClassModel(entityDefinition, new BasicClass())));
 
         return basicClasses;
     }
 
-    public static BasicClass ParseToClassModel(EntityType entityDefinition, BasicClass classModel)
+    public BasicClass ParseToClassModel(EntityType entityDefinition, BasicClass classModel)
     {
-        if (entityDefinition is null)
-            throw new ArgumentNullException(nameof(entityDefinition));
+        ArgumentNullException.ThrowIfNull(entityDefinition);
 
         classModel.Namespace = entityDefinition.packageName ?? string.Empty;
         classModel.ClassName = entityDefinition.memberName ?? string.Empty;
@@ -34,7 +33,7 @@ public static class EntityDefinitionParser
         return classModel;
     }
 
-    public static List<PropertyDescriptor> ParseProperties(List<Field> fields)
+    public List<PropertyDescriptor> ParseProperties(List<Field> fields)
     {
         var properties = new List<PropertyDescriptor>();
 
@@ -54,20 +53,7 @@ public static class EntityDefinitionParser
         return properties;
     }
 
-    public static (string name, string type, Field? vectorTypes) ParseField(Field encodedField)
-    {
-        (string name, string type, Field? vectorTypes) result = new()
-        {
-            name = encodedField.name ?? string.Empty,
-            type = DecodeTypeValueToTypeStr(encodedField.type, encodedField.name ?? string.Empty,
-                encodedField.vectorTypes),
-            vectorTypes = encodedField.vectorTypes
-        };
-
-        return result;
-    }
-
-    private static EntityValueType DecodeValueType(int fieldTypeValue)
+    public EntityValueType DecodeValueType(int fieldTypeValue)
     {
         return fieldTypeValue switch
         {
@@ -79,11 +65,13 @@ public static class EntityDefinitionParser
             -5 => EntityValueType.TranslationKey,
             -6 => EntityValueType.UnsignedInteger,
             -99 => EntityValueType.Vector,
-            _ => throw new ArgumentOutOfRangeException(nameof(fieldTypeValue), fieldTypeValue, "Unrecognized type value")
+            _ => throw new ArgumentOutOfRangeException(nameof(fieldTypeValue),
+                fieldTypeValue,
+                "Unrecognized type value")
         };
     }
 
-    public static string DecodeTypeValueToTypeStr(int fieldTypeValue, string fieldTypeName, Field? vectorType)
+    public string DecodeTypeValueToTypeStr(int fieldTypeValue, string fieldTypeName, Field? vectorType)
     {
         var decodedType = DecodeValueType(fieldTypeValue);
 
@@ -103,16 +91,14 @@ public static class EntityDefinitionParser
         return fieldType;
     }
 
-    public static string GetVectorizedType(int fieldTypeValue, Field? vectorType)
+    public string GetVectorizedType(int fieldTypeValue, Field? vectorType)
     {
         if (string.IsNullOrEmpty(vectorType?.name))
             throw new ArgumentNullException(nameof(vectorType));
 
-        if (vectorType.name.StartsWith("Vector.<Vector.<"))
+        if (vectorType.name.StartsWith("Vector.<Vector.<", StringComparison.Ordinal))
         {
-            var argumentType = vectorType.name
-                .Replace("Vector.<Vector.<", string.Empty)
-                .Replace(">>", string.Empty);
+            var argumentType = vectorType.name.Replace("Vector.<Vector.<", string.Empty).Replace(">>", string.Empty);
 
             if (argumentType.Contains("::"))
                 argumentType = argumentType.Split("::", 2)[1];
@@ -123,11 +109,9 @@ public static class EntityDefinitionParser
             return $"List<List<{argumentType}>>";
         }
 
-        if (vectorType.name.StartsWith("Vector.<"))
+        if (vectorType.name.StartsWith("Vector.<", StringComparison.Ordinal))
         {
-            var argumentType = vectorType.name
-                .Replace("Vector.<", string.Empty)
-                .Replace(">", string.Empty);
+            var argumentType = vectorType.name.Replace("Vector.<", string.Empty).Replace(">", string.Empty);
 
             if (argumentType.Contains("::"))
                 argumentType = argumentType.Split("::", 2)[1];
@@ -141,11 +125,9 @@ public static class EntityDefinitionParser
             return $"List<{argumentType}>";
         }
 
-        if (fieldTypeValue.Equals(-99) && vectorType.name.StartsWith("Vector.<"))
+        if (fieldTypeValue.Equals(-99) && vectorType.name.StartsWith("Vector.<", StringComparison.Ordinal))
         {
-            var argumentType = vectorType.name
-                .Replace("Vector.<", string.Empty)
-                .Replace(">", string.Empty);
+            var argumentType = vectorType.name.Replace("Vector.<", string.Empty).Replace(">", string.Empty);
 
             if (argumentType.Contains("::"))
                 argumentType = argumentType.Split("::", 2)[1];
@@ -162,7 +144,7 @@ public static class EntityDefinitionParser
         return string.Empty;
     }
 
-    private static string GetReferenceName(string fieldTypeName)
+    public string GetReferenceName(string fieldTypeName)
     {
         return fieldTypeName switch
         {
@@ -170,7 +152,23 @@ public static class EntityDefinitionParser
             "parameters" => "QuestObjectiveParameters",
             "coords" => "Point",
             "bounds" => "Rectangle",
-            _ => throw new ArgumentOutOfRangeException(nameof(fieldTypeName), fieldTypeName, "Unrecognized reference name")
+            _ => throw new ArgumentOutOfRangeException(nameof(fieldTypeName),
+                fieldTypeName,
+                "Unrecognized reference name")
         };
+    }
+
+    public (string name, string type, Field? vectorTypes) ParseField(Field encodedField)
+    {
+        (string name, string type, Field? vectorTypes) result = new()
+        {
+            name = encodedField.name ?? string.Empty,
+            type = DecodeTypeValueToTypeStr(encodedField.type,
+                encodedField.name ?? string.Empty,
+                encodedField.vectorTypes),
+            vectorTypes = encodedField.vectorTypes
+        };
+
+        return result;
     }
 }

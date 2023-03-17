@@ -6,9 +6,7 @@ public static class TemplateLoader
 {
     private static Assembly GetAssembly(Type? assemblyType)
     {
-        var assembly = assemblyType is null
-            ? Assembly.GetExecutingAssembly()
-            : Assembly.GetAssembly(assemblyType);
+        var assembly = assemblyType is null ? Assembly.GetExecutingAssembly() : Assembly.GetAssembly(assemblyType);
 
         return assembly;
     }
@@ -18,8 +16,7 @@ public static class TemplateLoader
         var assembly = GetAssembly(assemblyType);
 
         var resources = assembly.GetManifestResourceNames()
-            .Where(resource => resource.EndsWith(templateName, StringComparison.Ordinal))
-            .ToList();
+            .Where(resource => resource.EndsWith(templateName, StringComparison.Ordinal)).ToList();
 
         if (!resources.Any())
             throw new InvalidOperationException(

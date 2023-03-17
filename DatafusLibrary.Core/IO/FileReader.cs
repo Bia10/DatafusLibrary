@@ -19,13 +19,19 @@ public static class FileReader
         return string.Join(string.Empty, results);
     }
 
-    private static async Task<string[]> ReadAllLinesAsync(string path, Encoding encoding, string? terminatingLine = null)
+    private static async Task<string[]> ReadAllLinesAsync(string path, Encoding encoding,
+        string? terminatingLine = null)
     {
         try
         {
             var lines = new List<string>();
 
-            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize, DefaultOptions);
+            await using var stream = new FileStream(path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                DefaultBufferSize,
+                DefaultOptions);
 
             using var reader = new StreamReader(stream, encoding);
 

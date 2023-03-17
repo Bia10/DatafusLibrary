@@ -27,8 +27,7 @@ public class BasicClass
 
     public List<PropertyAssignDescriptor> InjectedProperties { get; set; } = new();
 
-    public IEnumerable<ParameterDescriptor> Constructor => ConstructorParameters
-        .Concat(InjectedProperties.Select(x => x.ToCamelCase()));
+    public IEnumerable<ParameterDescriptor> Constructor => ConstructorParameters.Concat(InjectedProperties.Select(x => x.ToCamelCase()));
 
     public string BaseConstructorAccessor => string.IsNullOrEmpty(ClassBase) ? string.Empty : ":";
 
@@ -36,8 +35,7 @@ public class BasicClass
 
     public string BaseConstructorOpeningBrace => string.IsNullOrEmpty(ClassBase) ? string.Empty : "(";
 
-    public IEnumerable<string> BaseConstructor => ConstructorParameters
-        .Select(x => x.Name);
+    public IEnumerable<string> BaseConstructor => ConstructorParameters.Select(x => x.Name);
 
     public string BaseConstructorClosingBrace => string.IsNullOrEmpty(ClassBase) ? string.Empty : ")";
 }

@@ -19,11 +19,11 @@ public class GeneratorTestFixture : IDisposable
 {
     public GenerationContext GenerationContext;
     public ILogger? Logger;
+    public IEntityParser Parser;
 
     public GeneratorTestFixture()
     {
-        GenerationContext = new GenerationContext(
-            successSyntaxTrees: new List<SyntaxTree>(),
+        GenerationContext = new GenerationContext(successSyntaxTrees: new List<SyntaxTree>(),
             failedSyntaxTrees: new List<SyntaxTree>(),
             generationResults: new List<GeneratorResult>(),
             inputTemplateName: "BasicClass.scriban",
@@ -34,11 +34,15 @@ public class GeneratorTestFixture : IDisposable
         {
             JsonDataDirectoryPath = GenerationContext.SetInputDataPath()
         };
+
+        IEntityDefinitionParser rr = new EntityDefinitionParser();
+        Parser = new EntityParser(rr);
     }
 
     public void Dispose()
     {
         if (Logger is null) return;
+
         Logger.Factory.Dispose();
         GC.SuppressFinalize(this);
     }
@@ -86,8 +90,9 @@ public class TemplateGeneratorTest : IClassFixture<GeneratorTestFixture>
         if (_fixture.Logger is null)
             throw new ArgumentNullException(nameof(_fixture.Logger));
 
-        var allBasicClasses =
-            await EntityParser.GetAllBasicClassesFromDir(_fixture.GenerationContext.JsonDataDirectoryPath);
+        var allBasicClasses = await _fixture.Parser.GetAllBasicClassesFromDirAsync(
+            _fixture.GenerationContext.JsonDataDirectoryPath);
+
         var outputDir = GenerationContext.CreateOutputDir(_fixture.GenerationContext.JsonDataDirectoryPath,
             _fixture.GenerationContext.GenerationOutputPath);
         var templateString =
@@ -125,8 +130,10 @@ public class TemplateGeneratorTest : IClassFixture<GeneratorTestFixture>
         var references = generationResult?.Compilation.References;
 
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-        var newCompilation = CSharpCompilation.Create(_fixture.GenerationContext.OutputAssemblyName, syntaxTrees,
-            references, options);
+        var newCompilation = CSharpCompilation.Create(_fixture.GenerationContext.OutputAssemblyName,
+            syntaxTrees,
+            references,
+            options);
 
         var arrayOfGenerators = ImmutableArray<BasicClassGenerator>.Empty;
         var arrayOfAdditionalTexts = ImmutableArray<AdditionalText>.Empty;

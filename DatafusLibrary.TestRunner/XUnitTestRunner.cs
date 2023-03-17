@@ -31,8 +31,7 @@ public class XUnitTestRunner : IDisposable
             MethodDisplay = TestMethodDisplay.ClassAndMethod
         };
 
-        _frontController = new XunitFrontController(
-            AppDomainSupport.Denied,
+        _frontController = new XunitFrontController(AppDomainSupport.Denied,
             testAssemblyPath,
             null,
             false,

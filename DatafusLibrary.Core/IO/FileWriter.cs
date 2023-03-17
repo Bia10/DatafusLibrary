@@ -16,8 +16,13 @@ public static class FileWriter
     {
         try
         {
-            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Write, FileShare.Write,
-                DefaultBufferSize, DefaultOptions);
+            await using var stream = new FileStream(path,
+                FileMode.Open,
+                FileAccess.Write,
+                FileShare.Write,
+                DefaultBufferSize,
+                DefaultOptions);
+
             await using var writer = new StreamWriter(stream, encoding);
 
             foreach (var line in lines)

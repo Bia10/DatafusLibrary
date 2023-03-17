@@ -28,8 +28,8 @@ public static class Roslyn
 
     public static CompilationUnitSyntax GetCompilationUnit(this ClassDeclarationSyntax syntaxNode)
     {
-        return syntaxNode.Ancestors().OfType<CompilationUnitSyntax>().FirstOrDefault()
-               ?? throw new InvalidOperationException(
+        return syntaxNode.Ancestors().OfType<CompilationUnitSyntax>().FirstOrDefault() ??
+               throw new InvalidOperationException(
                    $"Compilation unit not found for syntaxNode: {syntaxNode.Identifier.ToFullString()}");
     }
 
@@ -40,16 +40,14 @@ public static class Roslyn
 
     public static IEnumerable<IPropertySymbol> GetClassProperties(this ITypeSymbol typeSymbol)
     {
-        return typeSymbol.GetAllMembers()
-            .Where(symbol => symbol.Kind.Equals(SymbolKind.Property))
+        return typeSymbol.GetAllMembers().Where(symbol => symbol.Kind.Equals(SymbolKind.Property))
             .OfType<IPropertySymbol>().ToList();
     }
 
     public static List<PropertyDescriptor> GetClassPropertiesFromAllSymbols(this IEnumerable<ITypeSymbol> typeSymbols)
     {
-        return typeSymbols
-            .Where(symbol => symbol.Kind.Equals(SymbolKind.NamedType))
-            .Select(property => new PropertyDescriptor
+        return typeSymbols.Where(symbol => symbol.Kind.Equals(SymbolKind.NamedType)).Select(property
+            => new PropertyDescriptor
             {
                 Name = property.Name,
                 Type = property.BaseType is not null ? property.BaseType.ToDisplayString() : string.Empty
@@ -68,11 +66,9 @@ public static class Roslyn
 
     public static bool HasAttribute(this ClassDeclarationSyntax classSyntax, string attributeName)
     {
-        return classSyntax.AttributeLists.Count > 0 && classSyntax.AttributeLists
-            .SelectMany(attributeList => attributeList.Attributes
-                .Where(attributeSyntax =>
-                    (attributeSyntax.Name as IdentifierNameSyntax)?.Identifier.Text == attributeName))
-            .Any();
+        return classSyntax.AttributeLists.Count > 0 && classSyntax.AttributeLists.SelectMany(attributeList
+            => attributeList.Attributes.Where(attributeSyntax
+                => (attributeSyntax.Name as IdentifierNameSyntax)?.Identifier.Text == attributeName)).Any();
     }
 
     public static string GetNamespace(this CompilationUnitSyntax classSyntax)
@@ -139,14 +135,11 @@ public static class Roslyn
 
         var specialType = namedTypeSymbol.SpecialType;
 
-        if (specialType is SpecialType.System_Collections_Generic_IList_T or
-            SpecialType.System_Collections_Generic_ICollection_T or
-            SpecialType.System_Collections_Generic_IEnumerable_T or
-            SpecialType.System_Collections_Generic_IReadOnlyList_T or
-            SpecialType.System_Collections_Generic_IReadOnlyCollection_T)
-            return true;
-
-        return false;
+        return specialType is SpecialType.System_Collections_Generic_IList_T
+            or SpecialType.System_Collections_Generic_ICollection_T
+            or SpecialType.System_Collections_Generic_IEnumerable_T
+            or SpecialType.System_Collections_Generic_IReadOnlyList_T
+            or SpecialType.System_Collections_Generic_IReadOnlyCollection_T;
     }
 
     private static IEnumerable<INamedTypeSymbol> GetNamedTypeSymbols(Compilation compilation)
@@ -166,6 +159,7 @@ public static class Roslyn
                         break;
                     case INamedTypeSymbol memberAsNamedTypeSymbol:
                         yield return memberAsNamedTypeSymbol;
+
                         break;
                 }
         }

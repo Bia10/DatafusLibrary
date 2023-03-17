@@ -14,7 +14,9 @@ public static class GeneratorRunner
         var syntaxTrees = new[]
         {
             CSharpSyntaxTree.ParseText(source,
-                new CSharpParseOptions(LanguageVersion.Preview), string.Empty, Encoding.UTF8)
+                new CSharpParseOptions(LanguageVersion.Preview),
+                string.Empty,
+                Encoding.UTF8)
         };
 
         var references = CompilationReferences.GetPredefined();
@@ -48,9 +50,7 @@ public static class GeneratorRunner
         if (syntaxTree is null || string.IsNullOrEmpty(syntaxTree.FilePath))
             throw new InvalidOperationException();
 
-        return SyntaxTreeIsOfGeneratorType(syntaxTree, generator)
-            ? syntaxTree.GetText().ToString()
-            : string.Empty;
+        return SyntaxTreeIsOfGeneratorType(syntaxTree, generator) ? syntaxTree.GetText().ToString() : string.Empty;
     }
 
     private static bool SyntaxTreeIsOfGeneratorType(SyntaxTree syntaxTree, ISourceGenerator generator)

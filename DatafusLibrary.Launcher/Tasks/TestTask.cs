@@ -26,8 +26,7 @@ public sealed class TestTask : AsyncFrostingTask<LaunchContext>
             if (string.IsNullOrEmpty(testProjectOutputPath))
                 throw new NullReferenceException(nameof(testProjectOutputPath));
 
-            var assemblyFiles =
-                Directory.EnumerateFiles(testProjectOutputPath, "*.dll", SearchOption.AllDirectories);
+            var assemblyFiles = Directory.EnumerateFiles(testProjectOutputPath, "*.dll", SearchOption.AllDirectories);
 
             foreach (var assemblyFile in assemblyFiles)
                 try

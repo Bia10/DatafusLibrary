@@ -2,11 +2,10 @@
 
 public static class ObjectExtensions
 {
-    public static string[] ToStringArray(this IEnumerable<object?> arrayOfObj, bool includeNulls = false,
+    public static IEnumerable<string> ToStringArray(this IEnumerable<object?> arrayOfObj, bool includeNulls = false,
         string nullValue = "")
     {
-        if (arrayOfObj is null)
-            throw new ArgumentNullException(nameof(arrayOfObj));
+        ArgumentNullException.ThrowIfNull(arrayOfObj);
 
         if (!includeNulls)
             arrayOfObj = arrayOfObj.Where(obj => obj is not null);

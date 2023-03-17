@@ -12,8 +12,7 @@ public class TestOutputTarget : TargetWithLayoutHeaderAndFooter
 
     public void Add(ITestOutputHelper testOutputHelper, string loggerName)
     {
-        if (testOutputHelper is null)
-            throw new ArgumentNullException(nameof(testOutputHelper));
+        ArgumentNullException.ThrowIfNull(testOutputHelper);
 
         if (string.IsNullOrWhiteSpace(loggerName))
             throw new ArgumentNullException(nameof(loggerName));

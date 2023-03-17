@@ -64,9 +64,7 @@ public class PathProvider : FrostingContext
 
     private static string LoadTempPath()
     {
-        var tempPath = OperatingSystem.IsLinux()
-            ? RunnerDefaultTemp
-            : Path.GetTempPath();
+        var tempPath = OperatingSystem.IsLinux() ? RunnerDefaultTemp : Path.GetTempPath();
 
         if (!_context.DirectoryExists(tempPath))
             _context.Error($"Dir at path: {tempPath} not found!");
@@ -76,8 +74,8 @@ public class PathProvider : FrostingContext
 
     public void LoadTestProjectFullPath(IEnumerable<SolutionProject> projects)
     {
-        var testsProject = projects.FirstOrDefault(project => project.Name
-            .Equals(TestProjectName, StringComparison.Ordinal));
+        var testsProject = projects
+            .FirstOrDefault(project => project.Name.Equals(TestProjectName, StringComparison.Ordinal));
 
         if (testsProject is null)
             throw new NullReferenceException(nameof(testsProject));
@@ -99,9 +97,8 @@ public class PathProvider : FrostingContext
     private void LoadTestProjectOutputPath()
     {
         var testProjectOutputPath = _testProjectPath.FullPath.Replace(
-                _testProjectPath.Segments.Last(),
-                DebugOutputPathSegment.Replace(@"\", @"/"))
-            .Replace("//", "/");
+            _testProjectPath.Segments.Last(),
+            DebugOutputPathSegment.Replace(@"\", @"/")).Replace("//", "/");
 
         _context.Information($"Test project output path: {testProjectOutputPath}");
 
@@ -110,10 +107,8 @@ public class PathProvider : FrostingContext
 
     private void LoadTestAssemblyPath()
     {
-        var testProjectAssemblyPath = _testProjectPath.FullPath.Replace(
-                _testProjectPath.Segments.Last(),
-                DebugOutputPathSegment.Replace(@"\", @"/") + TestProjectName + ".dll")
-            .Replace("//", "/");
+        var testProjectAssemblyPath = _testProjectPath.FullPath.Replace(_testProjectPath.Segments.Last(),
+            DebugOutputPathSegment.Replace(@"\", @"/") + TestProjectName + ".dll").Replace("//", "/");
 
         _context.Information($"Test project assembly path: {testProjectAssemblyPath}");
 

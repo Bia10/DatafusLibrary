@@ -46,8 +46,7 @@ public class TestDiagnosticContext
     {
         try
         {
-            return string.Join(Environment.NewLine, Errors
-                .Select(error => error.Messages));
+            return string.Join(Environment.NewLine, Errors.Select(error => error.Messages));
         }
         catch (Exception ex)
         {
@@ -64,8 +63,7 @@ public class TestDiagnosticContext
     {
         try
         {
-            return string.Join(Environment.NewLine, Diagnostics
-                .Select(diagnostic => diagnostic.Message));
+            return string.Join(Environment.NewLine, Diagnostics.Select(diagnostic => diagnostic.Message));
         }
         catch (Exception ex)
         {
