@@ -9,6 +9,7 @@ public static class Json
     private static readonly JsonSerializerOptions Options = new()
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        PropertyNameCaseInsensitive = true,
         WriteIndented = true
     };
 

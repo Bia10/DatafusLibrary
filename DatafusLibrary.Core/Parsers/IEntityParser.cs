@@ -13,6 +13,8 @@ public interface IEntityParser
 
     Task<string> GetEntityDefinitionJsonAsync(string? pathToJson);
 
+    Task<T?> GetEntityDataFromJsonAsync<T>(string pathToJson);
+
     Task<Entity> GetEntityAsync(string? entityDefinitionJson);
 
     Task<IEnumerable<Entity>> GetAllEntityFromDirectoryAsync(string pathToDir);

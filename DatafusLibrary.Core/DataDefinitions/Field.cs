@@ -2,7 +2,7 @@
 
 public class Field
 {
-    public string? name { get; set; }
-    public int type { get; set; }
-    public Field? vectorTypes { get; set; }
+    public string? Name { get; set; }
+    public int Type { get; set; }
+    public Field? VectorTypes { get; set; }
 }

@@ -26,10 +26,10 @@ public class EntityDefinitionParser : IEntityDefinitionParser
 
         return new BasicClass
         {
-            Namespace = entityDefinition.packageName ?? string.Empty,
-            ClassName = entityDefinition.memberName ?? string.Empty,
-            Properties = entityDefinition.fields is not null && entityDefinition.fields.Any()
-                ? ParseFieldsToPropertyDescriptors(entityDefinition.fields)
+            Namespace = entityDefinition.PackageName ?? string.Empty,
+            ClassName = entityDefinition.MemberName ?? string.Empty,
+            Properties = entityDefinition.Fields is not null && entityDefinition.Fields.Any()
+                ? ParseFieldsToPropertyDescriptors(entityDefinition.Fields)
                 : Enumerable.Empty<PropertyDescriptor>()
         };
     }
@@ -38,12 +38,12 @@ public class EntityDefinitionParser : IEntityDefinitionParser
     {
         ArgumentNullException.ThrowIfNull(encodedField);
 
-        var fieldName = encodedField.name ?? string.Empty;
+        var fieldName = encodedField.Name ?? string.Empty;
 
         return new PropertyDescriptor
         {
             Name = char.ToUpper(fieldName[0]) + fieldName[1..],
-            Type = DecodeTypeValueToTypeStr(encodedField.type, fieldName, encodedField.vectorTypes)
+            Type = DecodeTypeValueToTypeStr(encodedField.Type, fieldName, encodedField.VectorTypes)
         };
     }
 
@@ -100,9 +100,9 @@ public class EntityDefinitionParser : IEntityDefinitionParser
 
     public string GetTwoDimVector(Field? vectorType)
     {
-        ArgumentException.ThrowIfNullOrEmpty(vectorType?.name);
+        ArgumentException.ThrowIfNullOrEmpty(vectorType?.Name);
 
-        var argumentType = vectorType.name
+        var argumentType = vectorType.Name
             .Replace("Vector.<Vector.<", string.Empty, StringComparison.Ordinal)
             .Replace(">>", string.Empty, StringComparison.OrdinalIgnoreCase);
 
@@ -111,9 +111,9 @@ public class EntityDefinitionParser : IEntityDefinitionParser
 
     public string GetOneDimVector(Field? vectorType)
     {
-        ArgumentException.ThrowIfNullOrEmpty(vectorType?.name);
+        ArgumentException.ThrowIfNullOrEmpty(vectorType?.Name);
 
-        var argumentType = vectorType.name
+        var argumentType = vectorType.Name
             .Replace("Vector.<", string.Empty, StringComparison.Ordinal)
             .Replace(">", string.Empty, StringComparison.OrdinalIgnoreCase);
 
@@ -122,12 +122,12 @@ public class EntityDefinitionParser : IEntityDefinitionParser
 
     public string GetVectorizedType(Field? vectorType)
     {
-        ArgumentException.ThrowIfNullOrEmpty(vectorType?.name);
+        ArgumentException.ThrowIfNullOrEmpty(vectorType?.Name);
 
-        if (vectorType.name.StartsWith("Vector.<Vector.<", StringComparison.Ordinal))
+        if (vectorType.Name.StartsWith("Vector.<Vector.<", StringComparison.Ordinal))
             return GetTwoDimVector(vectorType);
 
-        return vectorType.name.StartsWith("Vector.<", StringComparison.Ordinal)
+        return vectorType.Name.StartsWith("Vector.<", StringComparison.Ordinal)
             ? GetOneDimVector(vectorType)
             : string.Empty;
     }
