@@ -160,11 +160,9 @@ public class EntityParser : IEntityParser
 
         var entityClasses = await GetAllEntityTypesAsync(pathToDir);
 
-        var listOfEntitiesGroupedByPackage = entityClasses.GroupBy(entityClass => entityClass.packageName)
+        return entityClasses.GroupBy(entityClass => entityClass.packageName)
             .Select(grouping => grouping).Where(grouping => !string.IsNullOrEmpty(grouping.Key))
             .DistinctBy(grouping => grouping.Key).OrderBy(grouping => grouping.Key).ToList();
-
-        return listOfEntitiesGroupedByPackage;
     }
 
     public async Task<IGrouping<string?, EntityType>> GetEntityTypesInGroupByPackageNameAsync(string pathToDir,
@@ -174,12 +172,10 @@ public class EntityParser : IEntityParser
 
         var entityClasses = await GetAllEntityTypesAsync(pathToDir);
 
-        var entityClassesGroupedByPackageName = entityClasses.GroupBy(entityClass => entityClass.packageName)
+        return entityClasses.GroupBy(entityClass => entityClass.packageName)
             .Select(grouping => grouping)
             .Where(grouping => !string.IsNullOrEmpty(grouping.Key) && grouping.Key.Equals(packageName, StringComparison.Ordinal))
             .ToList().First();
-
-        return entityClassesGroupedByPackageName;
     }
 
     public async Task<List<IEnumerable<EntityType>>> GetAllEntityClassesInDirectoryAsync(string pathToDir)
@@ -193,7 +189,7 @@ public class EntityParser : IEntityParser
             var entityDefinitionJson = await GetEntityDefinitionJsonAsync(fileName);
             var entity = await GetEntityAsync(entityDefinitionJson);
 
-            var currentDefinition = JsonSerializer.Serialize(entity.def, new JsonSerializerOptions()
+            var currentDefinition = JsonSerializer.Serialize(entity.def, new JsonSerializerOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 WriteIndented = true
@@ -202,9 +198,10 @@ public class EntityParser : IEntityParser
             //Console.WriteLine($"Group name: |{currentDefinition}| members count.");
 
             var entityDefinition = await Json.DeserializeAsync<IEnumerable<EntityType>>(currentDefinition);
+            if (entityDefinition is null)
+                continue;
 
-            if (entityDefinition is not null)
-                entityDefinitions.Add(entityDefinition);
+            entityDefinitions.Add(entityDefinition);
         }
 
         return entityDefinitions;

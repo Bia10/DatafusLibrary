@@ -12,11 +12,19 @@ public interface IEntityDefinitionParser
 
     string DecodeTypeValueToTypeStr(int fieldTypeValue, string fieldTypeName, Field? vectorType);
 
+    string FormatArgumentType(string argumentType);
+
+    string GetOneDimVector(Field? vectorType);
+
+    string GetTwoDimVector(Field? vectorType);
+
     EntityValueType DecodeValueType(int fieldTypeValue);
 
-    IEnumerable<PropertyDescriptor> ParseProperties(IEnumerable<Field> fields);
+    PropertyDescriptor ParseFieldToPropertyDescriptor(Field encodedField);
+
+    IEnumerable<PropertyDescriptor> ParseFieldsToPropertyDescriptors(IEnumerable<Field> fields);
 
     BasicClass ParseToClassModel(EntityType entityDefinition);
 
-    Task<List<BasicClass>> ParseToBasicClasses(string entityDefinitions);
+    Task<IEnumerable<BasicClass>> ParseToClassModels(string entityDefinitions);
 }
