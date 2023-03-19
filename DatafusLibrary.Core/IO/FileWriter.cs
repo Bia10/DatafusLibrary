@@ -2,12 +2,12 @@
 
 namespace DatafusLibrary.Core.IO;
 
-public static class FileWriter
+internal static class FileWriter
 {
     private const int DefaultBufferSize = 4096;
     private const FileOptions DefaultOptions = FileOptions.Asynchronous | FileOptions.SequentialScan;
 
-    public static Task WriteAllLinesAsync(string path, IEnumerable<string> lines)
+    internal static Task WriteAllLinesAsync(string path, IEnumerable<string> lines)
     {
         return WriteAllLinesAsync(path, Encoding.UTF8, lines);
     }

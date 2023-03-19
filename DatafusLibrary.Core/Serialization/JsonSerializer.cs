@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace DatafusLibrary.Core.Serialization;
 
-public static class Json
+internal static class Json
 {
     private static readonly JsonSerializerOptions Options = new()
     {
@@ -13,10 +13,9 @@ public static class Json
         WriteIndented = true
     };
 
-    public static async Task<T?> DeserializeAsync<T>(string json, JsonSerializerOptions? options = null)
+    internal static async Task<T?> DeserializeAsync<T>(string json, JsonSerializerOptions? options = null)
     {
-        if (string.IsNullOrEmpty(json))
-            throw new ArgumentNullException(nameof(json));
+        ArgumentException.ThrowIfNullOrEmpty(json);
 
         var utf8Json = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
@@ -27,15 +26,17 @@ public static class Json
     {
         try
         {
-            options ??= Options;
-
-            return await JsonSerializer.DeserializeAsync<T>(utf8Json, options);
+            return await JsonSerializer.DeserializeAsync<T>(utf8Json, options ?? Options);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
 
             throw;
+        }
+        finally
+        {
+            await utf8Json.DisposeAsync();
         }
     }
 }

@@ -58,16 +58,6 @@ public class EntityParser : IEntityParser
         return await FileReader.ReadAllAsync(pathToJson, "\t\"data\": [");
     }
 
-    public async Task<T?> GetEntityDataFromJsonAsync<T>(string pathToJson)
-    {
-        var allLines = await FileReader.ReadAllAsync(pathToJson);
-        var entity = await Json.DeserializeAsync<Entity>(allLines);
-
-        var (_, dataJson) = await ParseToStringTupleAsync(entity ?? throw new InvalidOperationException());
-
-        return await Json.DeserializeAsync<T>(dataJson);
-    }
-
     public async Task<Entity> GetEntityAsync(string? entityDefinitionJson)
     {
         ArgumentException.ThrowIfNullOrEmpty(entityDefinitionJson);
@@ -83,6 +73,16 @@ public class EntityParser : IEntityParser
         ArgumentNullException.ThrowIfNull(entityType);
 
         return entityType;
+    }
+
+    public async Task<T?> GetEntityDataFromJsonAsync<T>(string pathToJson)
+    {
+        var allLines = await FileReader.ReadAllAsync(pathToJson);
+        var entity = await Json.DeserializeAsync<Entity>(allLines);
+
+        var (_, dataJson) = await ParseToStringTupleAsync(entity ?? throw new InvalidOperationException());
+
+        return await Json.DeserializeAsync<T>(dataJson);
     }
 
     public async Task<IEnumerable<Entity>> GetAllEntityFromDirectoryAsync(string pathToDir)

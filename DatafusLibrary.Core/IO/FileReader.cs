@@ -2,17 +2,17 @@
 
 namespace DatafusLibrary.Core.IO;
 
-public static class FileReader
+internal static class FileReader
 {
     private const int DefaultBufferSize = 4096;
     private const FileOptions DefaultOptions = FileOptions.Asynchronous | FileOptions.SequentialScan;
 
-    public static async Task<string[]> ReadAllLinesAsync(string path, string? terminatingLine = null)
+    internal static async Task<string[]> ReadAllLinesAsync(string path, string? terminatingLine = null)
     {
         return await ReadAllLinesAsync(path, Encoding.UTF8, terminatingLine);
     }
 
-    public static async Task<string> ReadAllAsync(string path, string? terminatingLine = null)
+    internal static async Task<string> ReadAllAsync(string path, string? terminatingLine = null)
     {
         var results = await ReadAllLinesAsync(path, Encoding.UTF8, terminatingLine);
 
